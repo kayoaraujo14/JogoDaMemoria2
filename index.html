@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Jogo da Memória — Sicredi</title>
+
+  <!-- Paleta Sicredi + layout responsivo -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="main-container" class="fade-root">
+
+    <!-- TELA: Cadastro -->
+    <section id="cadastro-section" class="screen" aria-label="Tela de cadastro" role="region">
+      <header class="screen-header">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"></div>
+          <h1>Jogo da Memória — Sicredi</h1>
+        </div>
+      </header>
+
+      <div class="cadastro-card">
+        <p class="lead">Digite seus dados para iniciar. Toque nos campos e use o teclado abaixo.</p>
+
+        <form id="cadastro-form" autocomplete="off" novalidate>
+  <label for="nome">Nome</label>
+  <input id="nome" name="novo-nome" type="text" inputmode="text"
+         autocomplete="new-nome" autocorrect="off" autocapitalize="none" spellcheck="false" required />
+
+  <label for="telefone">Telefone</label>
+  <input id="telefone" name="novo-telefone" type="tel" inputmode="numeric"
+         autocomplete="new-telefone" autocorrect="off" autocapitalize="none" spellcheck="false"
+         maxlength="11" required />
+
+  <label for="email">Email</label>
+  <input id="email" name="novo-email" type="email" inputmode="email"
+         autocomplete="new-email" autocorrect="off" autocapitalize="none" spellcheck="false" required />
+
+  <label for="cpf">CPF</label>
+  <input id="cpf" name="novo-cpf" type="text" inputmode="numeric"
+         autocomplete="new-cpf" autocorrect="off" autocapitalize="none" spellcheck="false"
+         maxlength="11" required />
+
+  <div id="cadastro-erro" class="erro-msg" aria-live="assertive"></div>
+  <button class="btn-primary" type="submit">Começar jogo</button>
+</form>
+
+
+        <div class="tools-row">
+          <button id="baixar-csv" class="btn-ghost" type="button">Baixar CSV</button>
+        </div>
+
+        <div id="teclado-virtual" aria-label="Teclado virtual" class="teclado" role="application"></div>
+      </div>
+    </section>
+
+    <!-- TELA: Jogo -->
+    <section id="jogo-section" class="screen" aria-label="Tela do jogo" role="region" hidden>
+      <header class="screen-header small">
+        <div class="brand compact">
+          <div class="brand-mark" aria-hidden="true"></div>
+          <h2>Memória Sicredi</h2>
+        </div>
+
+        <div id="timers-container" class="hud" aria-hidden="false">
+          <div class="hud-item">
+            <div class="hud-title">Memorize</div>
+            <div id="memorizar-timer" class="hud-value">10s</div>
+          </div>
+          <div class="hud-item">
+            <div class="hud-title">Tempo</div>
+            <div id="jogo-timer" class="hud-value">60s</div>
+          </div>
+          <div class="hud-item">
+            <div class="hud-title">Tentativas</div>
+            <div id="tentativas" class="hud-value">0</div>
+          </div>
+        </div>
+
+        <div id="progress-wrap">
+          <div id="progress-bar"><div></div></div>
+        </div>
+      </header>
+
+      <div class="game-area">
+        <div id="game-board" role="grid" aria-label="Tabuleiro de cartas"></div>
+      </div>
+
+      <footer class="game-footer">
+        
+      </footer>
+    </section>
+
+    <!-- TELA: Vitória -->
+    <section id="premio-section" class="screen result-screen" aria-label="Tela de premiação" role="region" hidden>
+      <div class="result-card success">
+        <div class="result-emoji" aria-hidden="true">🎉</div>
+        <h2>Parabéns!</h2>
+        <p class="result-text">Você completou o desafio.</p>
+        <div class="result-actions">
+          <button id="voltar-cadastro-premio" class="btn-primary">Voltar ao início</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TELA: Falha -->
+    <section id="fail-section" class="screen result-screen" aria-label="Tela de falha" role="region" hidden>
+      <div class="result-card fail">
+        <div class="result-emoji" aria-hidden="true">⏱️</div>
+        <h2>Tempo esgotado</h2>
+        <p class="result-text">Que pena — tente novamente!</p>
+        <div class="result-actions">
+          <button id="voltar-cadastro-fail" class="btn-primary">Tentar de novo</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
