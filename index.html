@@ -1,123 +1,135 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Jogo da Memória — Sicredi</title>
-
-  <!-- Paleta Sicredi + layout responsivo -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogo da Memória - Sicredi</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main id="main-container" class="fade-root">
 
-    <!-- TELA: Cadastro -->
-    <section id="cadastro-section" class="screen" aria-label="Tela de cadastro" role="region">
+  <main>
+    <!-- ========== TELA DE CADASTRO ========== -->
+    <section id="cadastro-section" class="screen active">
       <header class="screen-header">
-        <div class="brand">
-          <div class="brand-mark" aria-hidden="true"></div>
-          <h1>Jogo da Memória — Sicredi</h1>
+        <div class="header-inner">
+          <h1 class="title-centered">Jogo da Memória - Sicredi</h1>
         </div>
+        <button id="btn-settings" class="settings-btn" title="Configurações">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19.829 15.092C19.921 14.746 20 14.379 20 14c0-.379-.079-.746-.171-1.092l1.74-1.351a.5.5 0 0 0 .113-.633l-1.414-2.45a.5.5 0 0 0-.584-.233l-2.09.836a8.21 8.21 0 0 0-2.164-1.24L15.03 5.15a.5.5 0 0 0-.498-.498h-2.828a.5.5 0 0 0-.498.498L10.88 7.834a8.21 8.21 0 0 0-2.164 1.24l-2.09-.836a.5.5 0 0 0-.584.233l-1.414 2.45a.5.5 0 0 0 .113.633l1.74 1.351C4.079 13.254 4 13.621 4 14c0 .379.079.746.171 1.092l-1.74 1.351a.5.5 0 0 0-.113.633l1.414 2.45a.5.5 0 0 0 .584.233l2.09-.836a8.21 8.21 0 0 0 2.164 1.24l.324 2.684a.5.5 0 0 0 .498.498h2.828a.5.5 0 0 0 .498-.498l.324-2.684a8.21 8.21 0 0 0 2.164-1.24l2.09.836a.5.5 0 0 0 .584-.233l1.414-2.45a.5.5 0 0 0-.113-.633l-1.74-1.351ZM12 16.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Z"/></svg>
+        </button>
       </header>
 
       <div class="cadastro-card">
-        <p class="lead">Digite seus dados para iniciar. Toque nos campos e use o teclado abaixo.</p>
-
         <form id="cadastro-form" autocomplete="off" novalidate>
-  <label for="nome">Nome</label>
-  <input id="nome" name="novo-nome" type="text" inputmode="text"
-         autocomplete="new-nome" autocorrect="off" autocapitalize="none" spellcheck="false" required />
+          <div class="form-group">
+            <input id="nome" name="novo-nome" type="text" inputmode="text" autocomplete="new-nome" autocorrect="off" autocapitalize="none" spellcheck="false" required placeholder=" " />
+            <label for="nome">Nome</label>
+          </div>
+          <div class="form-group">
+            <input id="telefone" name="novo-telefone" type="tel" inputmode="numeric" autocomplete="new-telefone" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="11" required placeholder=" " />
+            <label for="telefone">Telefone</label>
+          </div>
+          <div class="form-group">
+            <input id="email" name="novo-email" type="email" inputmode="email" autocomplete="new-email" autocorrect="off" autocapitalize="none" spellcheck="false" required placeholder=" " />
+            <label for="email">Email</label>
+          </div>
+          <div class="form-group">
+            <input id="cpf" name="novo-cpf" type="text" inputmode="numeric" autocomplete="new-cpf" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="11" required placeholder=" " />
+            <label for="cpf">CPF</label>
+          </div>
 
-  <label for="telefone">Telefone</label>
-  <input id="telefone" name="novo-telefone" type="tel" inputmode="numeric"
-         autocomplete="new-telefone" autocorrect="off" autocapitalize="none" spellcheck="false"
-         maxlength="11" required />
+          <div id="cadastro-erro" class="erro-msg" aria-live="assertive"></div>
+          <button class="btn-primary" type="submit">Começar jogo</button>
+        </form>
 
-  <label for="email">Email</label>
-  <input id="email" name="novo-email" type="email" inputmode="email"
-         autocomplete="new-email" autocorrect="off" autocapitalize="none" spellcheck="false" required />
-
-  <label for="cpf">CPF</label>
-  <input id="cpf" name="novo-cpf" type="text" inputmode="numeric"
-         autocomplete="new-cpf" autocorrect="off" autocapitalize="none" spellcheck="false"
-         maxlength="11" required />
-
-  <div id="cadastro-erro" class="erro-msg" aria-live="assertive"></div>
-  <button class="btn-primary" type="submit">Começar jogo</button>
-</form>
-
-
-        <div class="tools-row">
-          <button id="baixar-csv" class="btn-ghost" type="button">Baixar CSV</button>
+        <div id="teclado-virtual" class="teclado teclado-totem">
+          <div id="teclado-alfanumerico"></div>
+          <div id="teclado-numerico" style="display: none;"></div>
         </div>
-
-        <div id="teclado-virtual" aria-label="Teclado virtual" class="teclado" role="application"></div>
       </div>
     </section>
 
-    <!-- TELA: Jogo -->
-    <section id="jogo-section" class="screen" aria-label="Tela do jogo" role="region" hidden>
-      <header class="screen-header small">
-        <div class="brand compact">
-          <div class="brand-mark" aria-hidden="true"></div>
-          <h2>Memória Sicredi</h2>
-        </div>
-
-        <div id="timers-container" class="hud" aria-hidden="false">
-          <div class="hud-item">
-            <div class="hud-title">Memorize</div>
-            <div id="memorizar-timer" class="hud-value">10s</div>
+    <!-- ========== TELA DO JOGO ========== -->
+    <section id="jogo-section" class="screen">
+      <div class="hud">
+        <div class="time-panel">
+          <div class="time-top">
+            <span class="hud-title">Tempo restante</span>
+            <span id="jogo-timer" class="hud-value">--</span>
           </div>
-          <div class="hud-item">
-            <div class="hud-title">Tempo</div>
-            <div id="jogo-timer" class="hud-value">60s</div>
-          </div>
-          <div class="hud-item">
-            <div class="hud-title">Tentativas</div>
-            <div id="tentativas" class="hud-value">0</div>
-          </div>
-        </div>
-
-        <div id="progress-wrap">
           <div id="progress-bar"><div></div></div>
         </div>
-      </header>
-
-      <div class="game-area">
-        <div id="game-board" role="grid" aria-label="Tabuleiro de cartas"></div>
+        <div class="memorize-panel">
+          <span class="hud-title">Memorizar</span>
+          <span id="memorizar-timer" class="memorize-value">--</span>
+        </div>
+        <div class="memorize-panel">
+          <span class="hud-title">Tentativas</span>
+          <span id="tentativas" class="memorize-value">0</span>
+        </div>
       </div>
 
-      <footer class="game-footer">
-        
-      </footer>
+      <div id="game-board"></div>
     </section>
 
-    <!-- TELA: Vitória -->
-    <section id="premio-section" class="screen result-screen" aria-label="Tela de premiação" role="region" hidden>
+    <!-- ========== TELA DE PREMIAÇÃO ========== -->
+    <section id="premio-section" class="screen result-screen">
       <div class="result-card success">
-        <div class="result-emoji" aria-hidden="true">🎉</div>
         <h2>Parabéns!</h2>
-        <p class="result-text">Você completou o desafio.</p>
-        <div class="result-actions">
-          <button id="voltar-cadastro-premio" class="btn-primary">Voltar ao início</button>
-        </div>
+        <p>Você concluiu o jogo da memória com sucesso.</p>
+        <button id="voltar-cadastro-premio" class="btn-primary">Jogar novamente</button>
       </div>
     </section>
 
-    <!-- TELA: Falha -->
-    <section id="fail-section" class="screen result-screen" aria-label="Tela de falha" role="region" hidden>
+    <!-- ========== TELA DE FALHA ========== -->
+    <section id="fail-section" class="screen result-screen">
       <div class="result-card fail">
-        <div class="result-emoji" aria-hidden="true">⏱️</div>
-        <h2>Tempo esgotado</h2>
-        <p class="result-text">Que pena — tente novamente!</p>
-        <div class="result-actions">
-          <button id="voltar-cadastro-fail" class="btn-primary">Tentar de novo</button>
-        </div>
+        <h2>Tempo esgotado!</h2>
+        <p>Tente novamente para ganhar o prêmio.</p>
+        <button id="voltar-cadastro-fail" class="btn-primary">Tentar novamente</button>
       </div>
     </section>
-
   </main>
 
-  <script src="script.js" defer></script>
+  <!-- ========== OVERLAY CONFIGURAÇÕES ========== -->
+  <div id="settings-overlay" class="overlay">
+    <div class="overlay-panel">
+      <div class="overlay-header">
+        <h3>Configurações</h3>
+        <button id="settings-close" class="settings-close">&times;</button>
+      </div>
+
+      <div class="overlay-body">
+        <div class="overlay-row">
+          <label class="overlay-label">Tempo de jogo</label>
+          <div class="radio-row">
+            <input type="radio" id="t-jogo-30" name="tempo-jogo" value="30"><label for="t-jogo-30">30s</label>
+            <input type="radio" id="t-jogo-45" name="tempo-jogo" value="45" checked><label for="t-jogo-45">45s</label>
+            <input type="radio" id="t-jogo-60" name="tempo-jogo" value="60"><label for="t-jogo-60">60s</label>
+          </div>
+        </div>
+
+        <div class="overlay-row">
+          <label class="overlay-label">Tempo de memorização</label>
+          <div class="radio-row">
+            <input type="radio" id="t-mem-10" name="tempo-memorizacao" value="10" checked><label for="t-mem-10">10s</label>
+            <input type="radio" id="t-mem-15" name="tempo-memorizacao" value="15"><label for="t-mem-15">15s</label>
+            <input type="radio" id="t-mem-20" name="tempo-memorizacao" value="20"><label for="t-mem-20">20s</label>
+          </div>
+        </div>
+
+        <div class="overlay-actions">
+          <button id="baixar-csv" class="btn-primary">Baixar CSV</button>
+        </div>
+      </div>
+
+      <div class="overlay-footer">
+        <p class="overlay-note">Ao baixar o CSV, os registros são limpos automaticamente.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

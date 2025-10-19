@@ -1,16 +1,26 @@
-/* === SCRIPT PRINCIPAL — JOGO DA MEMÓRIA SICREDI (VERSÃO REVISADA) === */
+/* === SCRIPT PRINCIPAL — JOGO DA MEMÓRIA SICREDI === */
 
-// ========== ELEMENTOS DOM ==========
+// ===== ELEMENTOS DOM =====
 const screens = {
   cadastro: document.getElementById('cadastro-section'),
   jogo: document.getElementById('jogo-section'),
   premio: document.getElementById('premio-section'),
   fail: document.getElementById('fail-section'),
 };
-
+const tecladoAlfanumericoContainer = document.getElementById('teclado-alfanumerico');
+const tecladoNumericoContainer = document.getElementById('teclado-numerico');
 const form = document.getElementById('cadastro-form');
 const erroMsg = document.getElementById('cadastro-erro');
 const tecladoVirtual = document.getElementById('teclado-virtual');
+const board = document.getElementById('game-board');
+const btnCSV = document.getElementById('baixar-csv');
+const btnVoltarPremio = document.getElementById('voltar-cadastro-premio');
+const btnVoltarFail = document.getElementById('voltar-cadastro-fail');
+const btnSettings = document.getElementById('btn-settings');
+const overlay = document.getElementById('settings-overlay');
+const btnCloseSettings = document.getElementById('settings-close');
+const radioTempoJogo = document.querySelectorAll('input[name="tempo-jogo"]');
+const radioTempoMemorizar = document.querySelectorAll('input[name="tempo-memorizacao"]');
 
 const timers = {
   memorizar: document.getElementById('memorizar-timer'),
@@ -19,18 +29,10 @@ const timers = {
   progress: document.querySelector('#progress-bar div'),
 };
 
-const board = document.getElementById('game-board');
-const btnCSV = document.getElementById('baixar-csv');
-const btnVoltarPremio = document.getElementById('voltar-cadastro-premio');
-const btnVoltarFail = document.getElementById('voltar-cadastro-fail');
-
-// ========== VARIÁVEIS DE ESTADO ==========
+// ===== VARIÁVEIS DE ESTADO =====
 let jogadorCPF = '';
 let tentativas = 0;
-let memorizarTimeout = null;
-let memorizarInterval = null;
-let jogoTimeout = null;
-let jogoInterval = null;
+let memorizarTimeout, jogoTimeout, jogoInterval;
 let lockBoard = false;
 let flippedCards = [];
 let cards = [];
@@ -38,7 +40,7 @@ let tempoTotal = 60;
 let tempoMemorizar = 10;
 let inputAtivo = null;
 
-// ========== CONJUNTO DE ÍCONES (renomeados para icon0..icon9) ==========
+// ===== CONJUNTO DE ÍCONES =====
 const icons = [
   'imagens/icon0.png',
   'imagens/icon1.png',
@@ -52,27 +54,10 @@ const icons = [
   'imagens/icon9.png'
 ];
 
-// ========== PRÉ-CARREGAMENTO DINÂMICO (robusto) ==========
-(function preloadImages(list) {
-  if (!Array.isArray(list)) return;
-  list.forEach(src => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => { /* pré-carregado */ };
-    img.onerror = () => console.warn('Erro ao pré-carregar imagem:', src);
-  });
-})(icons);
-
-// ========== FUNÇÕES UTILITÁRIAS ==========
-function showScreen(section) {
-  // Esconde todas as telas e mostra a solicitada com animação (usa .active da CSS)
-  Object.values(screens).forEach(s => {
-    s.classList.remove('active');
-    s.hidden = true;
-  });
-  section.hidden = false;
-  // pequeno delay para permitir transição
-  setTimeout(() => section.classList.add('active'), 20);
+// ===== UTILITÁRIAS =====
+function showScreen(target) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  target.classList.add('active');
 }
 
 function shuffle(array) {
@@ -92,25 +77,23 @@ function cpfJaUsado(cpf) {
 }
 function marcarCPFusado(cpf) {
   const usados = JSON.parse(localStorage.getItem('cpfs_usados') || '[]');
-  if (!usados.includes(cpf)) {
-    usados.push(cpf);
-    localStorage.setItem('cpfs_usados', JSON.stringify(usados));
-  }
+  usados.push(cpf);
+  localStorage.setItem('cpfs_usados', JSON.stringify(usados));
 }
 function salvarJogador(nome, telefone, email, cpf) {
   const jogadores = JSON.parse(localStorage.getItem('jogadores') || '[]');
-  jogadores.push({ nome, telefone, email, cpf, data: new Date().toISOString() });
+  jogadores.push({ nome, telefone, email, cpf });
   localStorage.setItem('jogadores', JSON.stringify(jogadores));
 }
 
-// ========== CSV E RESET ==========
+// ===== EXPORTAÇÃO CSV (agora limpa registros após baixar) =====
 btnCSV.onclick = function () {
   const jogadores = JSON.parse(localStorage.getItem('jogadores') || '[]');
   if (jogadores.length === 0) return alert('Nenhum dado para exportar.');
 
-  const linhas = ["Nome,Telefone,Email,CPF,Data"];
+  const linhas = ["Nome,Telefone,Email,CPF"];
   jogadores.forEach(j => {
-    linhas.push(`"${j.nome}","${j.telefone}","${j.email}","${j.cpf}","${j.data}"`);
+    linhas.push(`"${j.nome}","${j.telefone}","${j.email}","${j.cpf}"`);
   });
 
   const blob = new Blob([linhas.join("\n")], { type: 'text/csv;charset=utf-8;' });
@@ -120,10 +103,30 @@ btnCSV.onclick = function () {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  // Limpa registros após exportar
+  localStorage.removeItem('jogadores');
+  localStorage.removeItem('cpfs_usados');
+  alert('CSV baixado e registros limpos.');
 };
 
+// ===== CONFIGURAÇÕES =====
+btnSettings.onclick = () => overlay.classList.add('active');
+btnCloseSettings.onclick = () => overlay.classList.remove('active');
 
-// ========== FORMULÁRIO DE CADASTRO ==========
+radioTempoJogo.forEach(radio => {
+  radio.addEventListener('change', () => {
+    tempoTotal = parseInt(radio.value);
+  });
+});
+
+radioTempoMemorizar.forEach(radio => {
+  radio.addEventListener('change', () => {
+    tempoMemorizar = parseInt(radio.value);
+  });
+});
+
+// ===== FORMULÁRIO =====
 form.onsubmit = function (e) {
   e.preventDefault();
   erroMsg.textContent = '';
@@ -151,309 +154,235 @@ form.onsubmit = function (e) {
   iniciarJogo();
 };
 
-// ========== INÍCIO DO JOGO ==========
+// ===== INÍCIO DO JOGO =====
 function iniciarJogo() {
-  // Limpeza de possíveis timers anteriores
-  clearAllTimers();
-
+  showScreen(screens.jogo);
   board.innerHTML = '';
   tentativas = 0;
   timers.tentativas.textContent = '0';
   timers.progress.style.width = '100%';
-  flippedCards = [];
-  cards = [];
+  timers.progress.style.background = 'var(--verde-sicredi)';
 
   const pares = shuffle([...icons, ...icons]);
   cards = pares.map((icon, i) => criarCarta(icon, i));
   lockBoard = true;
 
-  // Mostra todas as cartas para memorizar
+  // Mostra todas as cartas por tempoMemorizar
   cards.forEach(card => card.classList.add('flipped'));
   let tempo = tempoMemorizar;
   timers.memorizar.textContent = `${tempo}s`;
 
-  // atualiza contador de memorização
-  memorizarInterval = setInterval(() => {
+  const memorizarInterval = setInterval(() => {
     tempo--;
     timers.memorizar.textContent = `${tempo}s`;
-    if (tempo <= 0) {
-      clearInterval(memorizarInterval);
-    }
+    if (tempo <= 0) clearInterval(memorizarInterval);
   }, 1000);
 
-  // ao fim do tempo de memorização, vira todas as cartas e inicia o jogo
   memorizarTimeout = setTimeout(() => {
     cards.forEach(card => card.classList.remove('flipped'));
     lockBoard = false;
-    timers.memorizar.textContent = '';
-    iniciarContagemJogo();
+    iniciarTempoJogo();
   }, tempoMemorizar * 1000);
-
-  // mostra tela de jogo
-  showScreen(screens.jogo);
 }
 
 function criarCarta(icon, index) {
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.icon = icon;
-  // Mantemos a estrutura compatível com o CSS (.card-inner + front/back)
   card.innerHTML = `
     <div class="card-inner card-front"></div>
-    <div class="card-inner card-back"><img src="${icon}" alt="ícone" draggable="false" /></div>
+    <div class="card-inner card-back"><img src="${icon}" alt="ícone" draggable="false"></div>
   `;
-
-  // Usa pointerdown para resposta mais rápida em touchscreen (evita duplicar eventos)
-  card.addEventListener('pointerdown', flipCard);
-  // Também suporta teclado/enter (acessibilidade)
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') flipCard.call(card, e);
-  });
-
+  card.addEventListener('click', flipCard);
   board.appendChild(card);
   return card;
 }
 
-// ========== LÓGICA DO JOGO ==========
-
-function iniciarContagemJogo() {
+// ===== LÓGICA DO JOGO =====
+function iniciarTempoJogo() {
   let tempo = tempoTotal;
   timers.jogo.textContent = `${tempo}s`;
   timers.memorizar.textContent = '';
   timers.progress.style.width = '100%';
 
-  // Limpeza prévia
-  clearInterval(jogoInterval);
-  clearTimeout(jogoTimeout);
-
   jogoInterval = setInterval(() => {
     tempo--;
     timers.jogo.textContent = `${tempo}s`;
-    timers.progress.style.width = `${(tempo / tempoTotal) * 100}%`;
+
+    const percent = (tempo / tempoTotal) * 100;
+    timers.progress.style.width = `${percent}%`;
+
+    if (percent > 60) timers.progress.style.background = 'var(--verde-sicredi)';
+    else if (percent > 30) timers.progress.style.background = 'var(--amarelo)';
+    else timers.progress.style.background = 'var(--vermelho)';
+
+    if (tempo <= 5) timers.jogo.classList.add('critical');
+    else timers.jogo.classList.remove('critical');
+
     if (tempo <= 0) {
       clearInterval(jogoInterval);
       encerrarJogo(false);
     }
   }, 1000);
 
-  jogoTimeout = setTimeout(() => {
-    encerrarJogo(false);
-  }, tempoTotal * 1000);
+  jogoTimeout = setTimeout(() => encerrarJogo(false), tempoTotal * 1000);
 }
 
-function flipCard(e) {
-  // suporte para ser chamado como handler (event) ou chamado com .call(card)
-  const card = e && e.currentTarget ? e.currentTarget : this;
-  if (!card) return;
-
-  if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
-
-  card.classList.add('flipped');
-  flippedCards.push(card);
+function flipCard() {
+  if (lockBoard || this.classList.contains('flipped') || this.classList.contains('matched')) return;
+  this.classList.add('flipped');
+  flippedCards.push(this);
 
   if (flippedCards.length === 2) {
     tentativas++;
     timers.tentativas.textContent = tentativas;
-    checkForMatch();
+    verificarPar();
   }
 }
 
-function checkForMatch() {
+function verificarPar() {
   lockBoard = true;
   const [card1, card2] = flippedCards;
-
-  if (!card1 || !card2) {
-    // segurança
-    flippedCards = [];
-    lockBoard = false;
-    return;
-  }
-
   if (card1.dataset.icon === card2.dataset.icon) {
     card1.classList.add('matched');
     card2.classList.add('matched');
     flippedCards = [];
     lockBoard = false;
 
-    // se todas as cartas estiverem marcadas -> vitória
+    // Evita lag de virada dupla
+    requestAnimationFrame(() => {
+      card1.style.transform = 'rotateY(180deg)';
+      card2.style.transform = 'rotateY(180deg)';
+    });
+
     if (document.querySelectorAll('.matched').length === cards.length) {
       encerrarJogo(true);
     }
   } else {
-    // pequena espera para mostrar ao usuário
     setTimeout(() => {
       card1.classList.remove('flipped');
       card2.classList.remove('flipped');
       flippedCards = [];
       lockBoard = false;
-    }, 800);
+    }, 700);
   }
 }
 
 function encerrarJogo(venceu) {
-  clearAllTimers();
+  clearTimeout(memorizarTimeout);
+  clearTimeout(jogoTimeout);
+  clearInterval(jogoInterval);
   marcarCPFusado(jogadorCPF);
 
-  // animação de transição suave
   setTimeout(() => {
     showScreen(venceu ? screens.premio : screens.fail);
   }, 400);
 }
 
-// limpa todos os timers usados no jogo
-function clearAllTimers() {
-  if (memorizarInterval) { clearInterval(memorizarInterval); memorizarInterval = null; }
-  if (memorizarTimeout) { clearTimeout(memorizarTimeout); memorizarTimeout = null; }
-  if (jogoInterval) { clearInterval(jogoInterval); jogoInterval = null; }
-  if (jogoTimeout) { clearTimeout(jogoTimeout); jogoTimeout = null; }
-}
-
-// ========== BOTÕES DE FLUXO ==========
-
+// ===== FLUXO =====
 btnVoltarPremio.onclick = resetarJogo;
 btnVoltarFail.onclick = resetarJogo;
 
 function resetarJogo() {
-  clearAllTimers();
   form.reset();
   erroMsg.textContent = '';
   flippedCards = [];
   cards = [];
-  jogadorCPF = '';
   showScreen(screens.cadastro);
 }
 
-// ========== TECLADO VIRTUAL ==========
-function criarTeclado(tipo = 'text') {
-  tecladoVirtual.innerHTML = '';
-
-  const toggleBtn = document.createElement('button');
-  toggleBtn.className = 'teclado-toggle';
-  toggleBtn.textContent = tipo === 'text' ? '123 / @' : 'ABC';
-  toggleBtn.type = 'button'; // <-- impede envio de form
-  toggleBtn.onclick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    criarTeclado(tipo === 'text' ? 'number' : 'text');
-  };
-  tecladoVirtual.appendChild(toggleBtn);
-
-  // ======== Layouts de teclado ========
-  const teclados = {
-    number: [
-      ['1','2','3'],
-      ['4','5','6'],
-      ['7','8','9'],
-      [' ','0','←'],
-      ['Próximo']
-    ],
-    text: [
-      ['q','w','e','r','t','y','u','i','o','p'],
-      ['a','s','d','f','g','h','j','k','l','←'],
-      ['z','x','c','v','b','n','m','Próximo'],
-      ['_','-','Espaço','.','@']
-    ]
-  };
-
-  const layout = teclados[tipo] || teclados.text;
-
-  layout.forEach(linha => {
-    const div = document.createElement('div');
-    div.className = 'linha-teclado';
-
-    linha.forEach(tecla => {
-      if (tecla.trim() === '') {
-        const espaço = document.createElement('div');
-        espaço.style.width = '40px';
-        espaço.style.height = '40px';
-        div.appendChild(espaço);
-        return;
-      }
-
-      const btn = document.createElement('button');
-      btn.className = 'tecla' + (['←','Próximo','Espaço'].includes(tecla) ? ' tecla-func' : '');
-      btn.textContent = tecla;
-      btn.type = 'button'; // <-- impede perder foco do input
-      if (tecla === 'Próximo') {
-        btn.style.minWidth = '150px';
-        btn.style.marginTop = '8px';
-      }
-
-      // Mantém o foco ativo no input ao clicar no teclado
-      btn.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (inputAtivo) inputAtivo.focus(); // força o foco de volta
-      });
-
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (inputAtivo) {
-          inputAtivo.focus();
-          teclaClicada(tecla);
-        }
-      });
-
-      div.appendChild(btn);
-    });
-
-    tecladoVirtual.appendChild(div);
-  });
-}
-
+// ===== TECLADO VIRTUAL =====
 function teclaClicada(tecla) {
   if (!inputAtivo) return;
-
-  // Garante que o campo continua com foco
-  inputAtivo.focus();
-
-  if (tecla === 'Próximo') {
-    const campos = [form.nome, form.telefone, form.email, form.cpf];
-    const idx = campos.indexOf(inputAtivo);
-    if (idx !== -1 && idx < campos.length - 1) campos[idx + 1].focus();
-    else if (idx === campos.length - 1) inputAtivo.blur();
-    return;
+  if (tecla === 'espaço') {
+    tecla = ' '; // Converte a palavra-chave em um caractere de espaço
   }
-
-  if (tecla === '←') return inputAtivo.value = inputAtivo.value.slice(0, -1);
-  if (tecla === 'Espaço') return inputAtivo.value += ' ';
-  if (inputAtivo.id === 'cpf' && inputAtivo.value.length >= 11) return;
-  if (inputAtivo.id === 'telefone' && inputAtivo.value.length >= 11) return;
-
-  inputAtivo.value += tecla;
+  switch (tecla) {
+    case '←':
+      inputAtivo.value = inputAtivo.value.slice(0, -1);
+      break;
+    case 'Próximo': {
+      const campos = Array.from(form.querySelectorAll('input'));
+      const idx = campos.indexOf(inputAtivo);
+      if (idx > -1 && idx < campos.length - 1) {
+        campos[idx + 1].focus();
+      }
+      break;
+    }
+    default:
+      if ((inputAtivo.id === 'cpf' || inputAtivo.id === 'telefone') && inputAtivo.value.length >= 11) return;
+      inputAtivo.value += tecla;
+      break;
+  }
 }
 
+function criarLayoutTeclado(container, layout) {
+  container.innerHTML = ''; // Limpa o container antes de construir
 
-// Liga teclado ao foco dos inputs
-[form.nome, form.telefone, form.email, form.cpf].forEach(input => {
+  layout.forEach(linha => {
+    const divLinha = document.createElement('div');
+    divLinha.className = 'linha-teclado';
+    linha.forEach(tecla => {
+      const btn = document.createElement('button');
+      btn.className = 'tecla';
+      btn.textContent = tecla;
+
+      // Adiciona classes e IDs para teclas especiais
+      if (tecla === 'espaço') {
+        btn.id = 'tecla-espaco';
+        btn.classList.add('tecla-especial');
+      } else if (tecla === 'Próximo') {
+        btn.id = 'tecla-proximo';
+        btn.classList.add('tecla-especial');
+      } else if (tecla === '←') {
+        btn.classList.add('tecla-func');
+      }
+
+      btn.onclick = () => teclaClicada(tecla);
+      divLinha.appendChild(btn);
+    });
+    container.appendChild(divLinha);
+  });
+}
+
+function mostrarTeclado(tipo) {
+  const isNumeric = tipo === 'number';
+  tecladoAlfanumericoContainer.style.display = isNumeric ? 'none' : 'flex';
+  tecladoNumericoContainer.style.display = isNumeric ? 'flex' : 'none';
+}
+
+form.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"]').forEach(input => {
   input.addEventListener('focus', (e) => {
     inputAtivo = e.target;
-    criarTeclado(input.id === 'telefone' || input.id === 'cpf' ? 'number' : 'text');
-  });
-  input.addEventListener('blur', () => {
-    // não limpa inputAtivo imediatamente para evitar perda durante clique no teclado virtual
-    setTimeout(() => { if (document.activeElement.tagName !== 'INPUT') inputAtivo = null; }, 150);
+    mostrarTeclado(input.id === 'telefone' || input.id === 'cpf' ? 'number' : 'text');
   });
 });
 
-// ========== INICIALIZAÇÃO ==========
+// ===== BLOQUEIOS DE PÁGINA =====
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.querySelectorAll('#cadastro-form input').forEach(input => {
+  input.setAttribute('autocomplete', 'new-' + input.id);
+  input.setAttribute('readonly', true);
+  setTimeout(() => input.removeAttribute('readonly'), 500);
+});
+
+// ===== INICIALIZAÇÃO =====
 showScreen(screens.cadastro);
-criarTeclado('text');
 
-// ========== BLOQUEIOS DE SEGURANÇA PARA USO EM FEIRA ==========
+// Cria os teclados uma única vez na inicialização
+const layoutAlfanumerico = [
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '←'],
+  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '@', '.'],
+  ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+  ['espaço', 'Próximo'],
+];
+const layoutNumerico = [
+  ['1', '2', '3'],
+  ['4', '5', '6'],
+  ['7', '8', '9'],
+  ['0', '←', 'Próximo'],
+];
 
-// Bloqueia o menu de contexto (botão direito)
-document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-// Bloqueia algumas teclas comuns de inspeção (F12, Ctrl+Shift+I, Ctrl+U, etc.)
-document.addEventListener('keydown', (e) => {
-  if (
-    e.key === 'F12' ||
-    (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
-    (e.ctrlKey && e.key.toUpperCase() === 'U')
-  ) {
-    e.preventDefault();
-  }
-});
-
+criarLayoutTeclado(tecladoAlfanumericoContainer, layoutAlfanumerico);
+criarLayoutTeclado(tecladoNumericoContainer, layoutNumerico);

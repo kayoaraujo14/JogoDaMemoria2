@@ -1,264 +1,299 @@
-/* === ESTILO GERAL DO JOGO DA MEMÓRIA SICREDI === */
+/* =====================
+   ESTILOS PRINCIPAIS
+===================== */
+
 :root {
-  --verde-escuro: #1B5E20;
-  --verde-claro: #8BC34A;
+  --verde-sicredi: #1B5E20;
   --verde-medio: #2E7D32;
+  --verde-claro: #43A047;
+  --amarelo: #fdd835;
+  --vermelho: #e53935;
   --branco: #ffffff;
-  --cinza-fundo: #f5fef8;
-  --cinza-borda: #dceee0;
-  --sombra: rgba(0, 0, 0, 0.1);
-  --transicao: 0.3s ease;
-  font-family: "Nunito", "Segoe UI", Arial, sans-serif;
+  --cinza-claro: #f1f1f1;
+  --cinza-texto: #333;
 }
 
-html, body {
-  height: 100%;
-  width: 100%;
+* {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
   margin: 0;
-  background: linear-gradient(180deg, var(--cinza-fundo) 0%, #e6f4ec 100%);
-  color: var(--verde-escuro);
+  background: var(--cinza-claro);
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: var(--cinza-texto);
   overflow: hidden;
-  touch-action: manipulation;
 }
 
-main#main-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+main {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
-/* ==== TELAS / TRANSIÇÕES ==== */
+/* ===== Telas ===== */
 .screen {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  position: absolute;
-  inset: 0;
-  width: 100%;
+  justify-content: center;
+  padding: 20px;
   height: 100%;
-  padding: 24px;
-  background: var(--branco);
-  border-radius: 16px;
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.06);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(10px);
-  transition: all var(--transicao);
-}
-.screen.active {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
 }
 
-/* ==== LOGO / CABEÇALHO ==== */
+.screen.active {
+  display: flex;
+}
+
+/* ===== Cabeçalho ===== */
+.screen-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+}
+
+.header-inner {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .brand {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
 }
-.brand.compact h2 {
-  font-size: 1.3rem;
-  margin: 0;
-}
+
 .brand-mark {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--verde-escuro), var(--verde-claro));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-.brand h1, .brand h2 {
-  margin: 0;
-  font-weight: 700;
-  color: var(--verde-escuro);
+  background: var(--verde-sicredi);
 }
 
-/* ==== TELA DE CADASTRO ==== */
-.cadastro-card {
+h1, h2, h3 {
+  margin: 0;
+  color: var(--verde-sicredi);
+}
+
+.title-centered {
+  text-align: center;
+  width: 100%;
+  font-size: 1.4rem;
+}
+
+/* ===== Botão de Configurações ===== */
+.settings-btn {
+  background: var(--verde-sicredi);
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.settings-btn:hover {
+  background: var(--verde-medio);
+}
+
+/* ===== Overlay (Configurações) ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.overlay.active {
+  display: flex;
+}
+
+.overlay-panel {
   background: var(--branco);
   border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
   width: 90%;
   max-width: 420px;
-  text-align: center;
-  margin-top: 20px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease-out;
 }
 
-.cadastro-card .lead {
-  font-size: 1rem;
-  margin-bottom: 16px;
-  color: var(--verde-escuro);
-}
-
-#cadastro-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#cadastro-form label {
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--verde-medio);
-}
-
-#cadastro-form input {
-  border: 1.5px solid var(--cinza-borda);
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 1rem;
-  background: #f9fdfb;
-  transition: border-color var(--transicao);
-}
-#cadastro-form input:focus {
-  border-color: var(--verde-medio);
-  outline: none;
-}
-
-.erro-msg {
-  color: #c62828;
-  font-weight: 600;
-  margin-top: 6px;
-  min-height: 18px;
-}
-
-/* ==== BOTÕES ==== */
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  transition: all var(--transicao);
-}
-.btn-primary {
-  background: linear-gradient(90deg, var(--verde-escuro), var(--verde-claro));
-  color: var(--branco);
-  padding: 12px 0;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(26, 140, 85, 0.15);
-}
-.btn-primary:hover {
-  transform: scale(1.03);
-  box-shadow: 0 4px 14px rgba(26, 140, 85, 0.25);
-}
-.btn-ghost {
-  background: none;
-  color: var(--verde-medio);
-  border: 1.5px solid var(--verde-medio);
-  border-radius: 10px;
-  padding: 8px 16px;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-.btn-ghost:hover {
-  background: var(--verde-medio);
-  color: var(--branco);
-}
-.tools-row {
+.overlay-header {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.overlay-header h3 {
+  font-size: 1.3rem;
+  color: var(--verde-sicredi);
+}
+
+.settings-close {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--verde-sicredi);
+}
+
+.overlay-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.overlay-row {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-/* ==== TECLADO VIRTUAL ==== */
-#teclado-virtual {
-  margin-top: 20px;
-  background: #f4fbf6;
-  padding: 12px 8px;
-  border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+.overlay-label {
+  font-weight: 600;
 }
-.linha-teclado {
+
+.radio-row {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 8px;
 }
-.tecla {
-  background: #d8f0dd;
+
+/* Estilo moderno para botões de rádio */
+.radio-row input[type="radio"] {
+  display: none; /* Esconde o rádio original */
+}
+
+.radio-row label {
+  padding: 8px 16px;
+  border: 2px solid var(--verde-medio);
+  color: var(--verde-medio);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  font-weight: 500;
+}
+
+.radio-row input[type="radio"]:checked + label {
+  background-color: var(--verde-medio);
+  color: var(--branco);
+  border-color: var(--verde-medio);
+}
+
+.overlay-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.overlay-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.overlay-note {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: scale(0.9);}
+  to {opacity: 1; transform: scale(1);}
+}
+@keyframes spin {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(90deg);}
+}
+
+/* ===== Formulário ===== */
+.cadastro-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--branco);
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* Estilo para Floating Labels */
+.form-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  color: #888;
+  pointer-events: none;
+  transition: all 0.2s ease-out;
+  background-color: var(--branco);
+  padding: 0 4px;
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 10px;
+  font-size: 0.85rem;
+  color: var(--verde-sicredi);
+}
+
+input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 2px solid var(--verde-sicredi);
   border-radius: 10px;
-  padding: 14px 10px;
-  font-size: 1rem;
-  color: var(--verde-escuro);
-  min-width: 34px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 1.1rem;
+  background: transparent;
 }
-.tecla:active {
-  background: var(--verde-claro);
-  color: var(--branco);
+input:focus {
+  outline: none;
+  border-color: var(--verde-claro);
 }
-.tecla-func {
-  background: var(--verde-medio);
-  color: var(--branco);
-  font-weight: 600;
-  min-width: 60px;
-}
-.teclado-toggle {
-  background: linear-gradient(90deg, var(--verde-escuro), var(--verde-claro));
+
+.btn-primary {
+  background: var(--verde-sicredi);
   color: var(--branco);
   border: none;
-  border-radius: 10px;
-  padding: 8px 16px;
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-
-/* ==== HUD (tempo e tentativas) ==== */
-.hud {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin: 12px 0;
-}
-.hud-item {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 10px;
-  padding: 8px 10px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-.hud-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--verde-medio);
-}
-.hud-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--verde-escuro);
-}
-
-#progress-wrap {
-  width: 80%;
-  max-width: 500px;
-  margin: 0 auto 10px;
-}
-#progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #cde8da;
   border-radius: 8px;
-  overflow: hidden;
-}
-#progress-bar div {
+  padding: 12px 20px;
+  font-size: 1rem;
+  cursor: pointer;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, var(--verde-escuro), var(--verde-claro));
-  transition: width 1s linear;
+}
+.btn-primary:hover {
+  background: var(--verde-medio);
 }
 
-/* ==== TABULEIRO (ajuste automático para 768x1360 e outras telas) ==== */
+.btn-ghost {
+  background: transparent;
+  border: 2px solid var(--verde-sicredi);
+  color: var(--verde-sicredi);
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  background: var(--verde-sicredi);
+  color: var(--branco);
+}
+
+/* ===== Tabuleiro ===== */
 #game-board {
   display: grid;
   justify-content: center;
@@ -276,18 +311,13 @@ button {
   width: 100%;
   aspect-ratio: 1/1;
   border-radius: 16px;
-  border: 3px solid var(--verde-escuro);
+  border: 3px solid var(--verde-sicredi);
   background: #f8fcfa;
   transform-style: preserve-3d;
-  transition: transform 0.45s ease, scale 0.15s ease;
+  transition: transform 0.4s ease;
   cursor: pointer;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.12);
 }
-
-.card:active {
-  transform: scale(0.97);
-}
-
 .card-inner {
   position: absolute;
   inset: 0;
@@ -295,18 +325,15 @@ button {
   backface-visibility: hidden;
   overflow: hidden;
 }
-
 .card-front {
   background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .card-back {
   transform: rotateY(180deg);
 }
-
 .card.flipped {
   transform: rotateY(180deg);
 }
@@ -317,37 +344,192 @@ button {
   object-fit: contain;
   margin: auto;
   display: block;
-  filter: brightness(1.05) saturate(1.1);
+  transition: transform 0.25s ease-out;
 }
 
-/* Animação de acerto */
 .card.matched {
   border-color: var(--verde-claro);
-  animation: pulseMatch 0.5s ease-out;
-  box-shadow: 0 0 16px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 0 16px rgba(76,175,80,0.4);
+  transform: rotateY(180deg) scale(1.03);
 }
 
-@keyframes pulseMatch {
+/* ===== Teclado Virtual (ajustado) ===== */
+.teclado {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.teclado > div { /* Aplica aos contêineres #teclado-alfanumerico e #teclado-numerico */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.linha-teclado {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.tecla {
+  background: var(--verde-sicredi);
+  color: var(--branco);
+  border: none;
+  border-radius: 10px;
+  padding: 18px 24px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex: 1 1 auto;
+  max-width: 70px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  transition: transform 0.1s ease, background 0.15s;
+}
+.tecla:active {
+  transform: scale(0.93);
+  background: var(--verde-medio);
+}
+
+.tecla-func {
+  background: var(--verde-claro);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ===== Estilos do Teclado Totem ===== */
+.teclado-totem .linha-teclado {
+  max-width: 980px; /* Aumenta a largura máxima do teclado */
+}
+
+.teclado-totem .tecla {
+  padding: 18px 12px; /* Ajusta o padding para teclas mais largas */
+  font-size: 1.2rem;
+  min-width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.teclado-totem .tecla-especial {
+  flex-grow: 1; /* Permite que as teclas especiais cresçam */
+}
+
+.teclado-totem #tecla-espaco {
+  flex-grow: 5; /* Faz a barra de espaço ser bem maior */
+  max-width: 450px;
+}
+
+.teclado-totem #tecla-proximo {
+  flex-grow: 2;
+  max-width: 200px;
+  background: var(--verde-claro);
+  color: var(--branco);
+  font-weight: bold;
+}
+
+
+/* ===== Resultados ===== */
+.result-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-card {
+  background: var(--branco);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.result-card.success h2 {
+  color: var(--verde-sicredi);
+}
+.result-card.fail h2 {
+  color: #b71c1c;
+}
+
+/* ===== HUD / Painel de Tempo ===== */
+.hud {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.time-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60%;
+  max-width: 360px;
+}
+
+.time-top, .time-bottom {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.hud-title {
+  font-size: 0.9rem;
+  color: #444;
+  font-weight: 600;
+}
+
+.hud-value {
+  font-size: 1.4rem;
+  color: var(--verde-sicredi);
+  font-weight: bold;
+}
+
+.memorize-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #e8f5e9;
+  border-radius: 12px;
+  padding: 6px 12px;
+}
+
+.memorize-value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--verde-sicredi);
+}
+
+/* Barra de Progresso Dinâmica */
+#progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+#progress-bar div {
+  height: 100%;
+  background: var(--verde-sicredi);
+  width: 100%;
+  transition: width 1s linear, background 0.3s;
+}
+
+/* Efeito de tempo crítico */
+@keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
-
-/* ==== RESPONSIVIDADE E AJUSTES DINÂMICOS ==== */
-@media (max-height: 900px) {
-  #game-board {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
-  }
-  .card img {
-    width: 75%;
-    height: 75%;
-  }
-}
-
-@media (orientation: landscape) {
-  #game-board {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    max-width: 900px;
-  }
+.hud-value.critical {
+  color: var(--vermelho);
+  animation: pulse 0.8s infinite;
 }
