@@ -1,44 +1,73 @@
 /* === SCRIPT PRINCIPAL — JOGO DA MEMÓRIA SICREDI === */
 
+// ===== UTILITÁRIAS =====
+const getEl = (id) => document.getElementById(id);
+
 // ===== ELEMENTOS DOM =====
 const screens = {
-  cadastro: document.getElementById('cadastro-section'),
-  jogo: document.getElementById('jogo-section'),
-  premio: document.getElementById('premio-section'),
-  fail: document.getElementById('fail-section'),
+  cadastro: getEl('cadastro-section'),
+  jogo: getEl('jogo-section'),
+  premio: getEl('premio-section'),
+  fail: getEl('fail-section'),
 };
-const tecladoAlfanumericoContainer = document.getElementById('teclado-alfanumerico');
-const tecladoNumericoContainer = document.getElementById('teclado-numerico');
-const form = document.getElementById('cadastro-form');
-const erroMsg = document.getElementById('cadastro-erro');
-const tecladoVirtual = document.getElementById('teclado-virtual');
-const board = document.getElementById('game-board');
-const btnCSV = document.getElementById('baixar-csv');
-const btnVoltarPremio = document.getElementById('voltar-cadastro-premio');
-const btnVoltarFail = document.getElementById('voltar-cadastro-fail');
-const btnSettings = document.getElementById('btn-settings');
-const overlay = document.getElementById('settings-overlay');
-const btnCloseSettings = document.getElementById('settings-close');
+const tecladoAlfanumericoContainer = getEl('teclado-alfanumerico');
+const form = getEl('cadastro-form');
+const erroMsg = getEl('cadastro-erro');
+const tecladoVirtual = getEl('teclado-virtual');
+const board = getEl('game-board');
+const btnCSV = getEl('baixar-csv');
+const btnVoltarPremio = getEl('voltar-cadastro-premio');
+const btnVoltarFail = getEl('voltar-cadastro-fail');
+const btnSettings = getEl('btn-settings');
+const overlay = getEl('settings-overlay');
+const btnCloseSettings = getEl('settings-close');
 const radioTempoJogo = document.querySelectorAll('input[name="tempo-jogo"]');
 const radioTempoMemorizar = document.querySelectorAll('input[name="tempo-memorizacao"]');
+const rankingList = getEl('ranking-list');
+const finalTimeEl = getEl('final-time');
+const finalAttemptsEl = getEl('final-attempts');
+const pairsFoundEl = getEl('pairs-found');
+
 
 const timers = {
-  memorizar: document.getElementById('memorizar-timer'),
-  jogo: document.getElementById('jogo-timer'),
-  tentativas: document.getElementById('tentativas'),
+  memorizar: getEl('memorizar-timer'),
+  jogo: getEl('jogo-timer'),
+  tentativas: getEl('tentativas'),
   progress: document.querySelector('#progress-bar div'),
 };
 
-// ===== VARIÁVEIS DE ESTADO =====
-let jogadorCPF = '';
-let tentativas = 0;
-let memorizarTimeout, jogoTimeout, jogoInterval;
-let lockBoard = false;
-let flippedCards = [];
-let cards = [];
-let tempoTotal = 60;
-let tempoMemorizar = 10;
-let inputAtivo = null;
+// ===== CONSTANTES =====
+const TEMPO_ANIMACAO_TELA = 350; // ms
+const TEMPO_DESVIRAR_CARTA = 700; // ms
+const STORAGE_KEYS = {
+  JOGADORES: 'jogadores',
+  CPFS_USADOS: 'cpfs_usados',
+  RANKING: 'ranking',
+};
+
+// ===== ÁUDIO =====
+const sounds = {
+  flip: new Audio('sons/flip.mp3'),
+  match: new Audio('sons/match.mp3'),
+};
+
+// Estado inicial para referência e reset
+const initialState = {
+  jogadorCPF: '',
+  tempoRestante: 0,
+  tentativas: 0,
+  lockBoard: false,
+  flippedCards: [],
+  cards: [],
+  tempoTotal: 45,
+  tempoMemorizar: 10,
+  memorizarTimeout: null,
+  jogoInterval: null,
+};
+
+// Objeto de estado principal do jogo, uma cópia do inicial
+let state = JSON.parse(JSON.stringify(initialState));
+
 
 // ===== CONJUNTO DE ÍCONES =====
 const icons = [
@@ -54,12 +83,32 @@ const icons = [
   'imagens/icon9.png'
 ];
 
-// ===== UTILITÁRIAS =====
-function showScreen(target) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
-  target.classList.add('active');
+function showScreen(newScreen) {
+  const currentScreen = document.querySelector('.screen.active');
+
+  if (currentScreen) {
+    if (currentScreen === newScreen) return; // Não faz nada se for a mesma tela
+    
+    // Agenda a remoção da tela antiga após a animação de forma confiável
+    setTimeout(() => {
+      currentScreen.classList.remove('active', 'screen-exit');
+    }, TEMPO_ANIMACAO_TELA); // Usa a constante já definida
+    currentScreen.classList.add('screen-exit');
+  }
+
+  // Ativa a nova tela imediatamente para que a animação de entrada comece
+  newScreen.classList.add('active');
+  newScreen.classList.remove('screen-exit');
 }
 
+function playAudio(sound) {
+  if (sound && typeof sound.play === 'function') {
+    sound.currentTime = 0;
+    sound.play().catch(error => {
+      console.error(`Erro ao tocar o som: ${error.message}`);
+    });
+  }
+}
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -72,28 +121,29 @@ function validarCPF(cpf) {
   return /^\d{11}$/.test(cpf);
 }
 function cpfJaUsado(cpf) {
-  const usados = JSON.parse(localStorage.getItem('cpfs_usados') || '[]');
+  const usados = JSON.parse(localStorage.getItem(STORAGE_KEYS.CPFS_USADOS) || '[]');
   return usados.includes(cpf);
 }
 function marcarCPFusado(cpf) {
-  const usados = JSON.parse(localStorage.getItem('cpfs_usados') || '[]');
+  const usados = JSON.parse(localStorage.getItem(STORAGE_KEYS.CPFS_USADOS) || '[]');
   usados.push(cpf);
-  localStorage.setItem('cpfs_usados', JSON.stringify(usados));
+  localStorage.setItem(STORAGE_KEYS.CPFS_USADOS, JSON.stringify(usados));
 }
-function salvarJogador(nome, telefone, email, cpf) {
-  const jogadores = JSON.parse(localStorage.getItem('jogadores') || '[]');
-  jogadores.push({ nome, telefone, email, cpf });
-  localStorage.setItem('jogadores', JSON.stringify(jogadores));
+function salvarJogador(nome, telefone, cpf) {
+  const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
+  jogadores.push({ nome, telefone, cpf });
+  localStorage.setItem(STORAGE_KEYS.JOGADORES, JSON.stringify(jogadores));
 }
 
 // ===== EXPORTAÇÃO CSV (agora limpa registros após baixar) =====
 btnCSV.onclick = function () {
-  const jogadores = JSON.parse(localStorage.getItem('jogadores') || '[]');
+  const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
   if (jogadores.length === 0) return alert('Nenhum dado para exportar.');
 
-  const linhas = ["Nome,Telefone,Email,CPF"];
+  const linhas = ["Nome,Telefone,CPF"];
   jogadores.forEach(j => {
-    linhas.push(`"${j.nome}","${j.telefone}","${j.email}","${j.cpf}"`);
+    // Escapa aspas duplas dentro dos valores, se houver
+    linhas.push([j.nome, j.telefone, j.cpf].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
   });
 
   const blob = new Blob([linhas.join("\n")], { type: 'text/csv;charset=utf-8;' });
@@ -105,10 +155,31 @@ btnCSV.onclick = function () {
   document.body.removeChild(link);
 
   // Limpa registros após exportar
-  localStorage.removeItem('jogadores');
-  localStorage.removeItem('cpfs_usados');
-  alert('CSV baixado e registros limpos.');
+  localStorage.removeItem(STORAGE_KEYS.JOGADORES);
+  localStorage.removeItem(STORAGE_KEYS.CPFS_USADOS);
+  localStorage.removeItem(STORAGE_KEYS.RANKING);
+  alert('CSV baixado e todos os registros (jogadores e ranking) foram limpos.');
 };
+
+// ===== RANKING =====
+function salvarPontuacao(nome, tempo) {
+  const ranking = JSON.parse(localStorage.getItem(STORAGE_KEYS.RANKING) || '[]');
+  ranking.push({ nome, tempo });
+  ranking.sort((a, b) => a.tempo - b.tempo); // Ordena pelo menor tempo
+  const top5 = ranking.slice(0, 5); // Pega apenas os 5 melhores
+  localStorage.setItem(STORAGE_KEYS.RANKING, JSON.stringify(top5));
+}
+
+function renderizarRanking() {
+  const ranking = JSON.parse(localStorage.getItem(STORAGE_KEYS.RANKING) || '[]');
+  rankingList.innerHTML = '';
+  
+  if (ranking.length === 0) {
+    rankingList.innerHTML = '<li>Ainda não há pontuações. Seja o primeiro!</li>';
+    return;
+  }
+  rankingList.innerHTML = ranking.map((p, i) => `<li><span>${i + 1}. ${p.nome}</span> <strong>${p.tempo}s</strong></li>`).join('');
+}
 
 // ===== CONFIGURAÇÕES =====
 btnSettings.onclick = () => overlay.classList.add('active');
@@ -116,13 +187,13 @@ btnCloseSettings.onclick = () => overlay.classList.remove('active');
 
 radioTempoJogo.forEach(radio => {
   radio.addEventListener('change', () => {
-    tempoTotal = parseInt(radio.value);
+    state.tempoTotal = parseInt(radio.value);
   });
 });
 
 radioTempoMemorizar.forEach(radio => {
   radio.addEventListener('change', () => {
-    tempoMemorizar = parseInt(radio.value);
+    state.tempoMemorizar = parseInt(radio.value);
   });
 });
 
@@ -133,11 +204,15 @@ form.onsubmit = function (e) {
 
   const nome = form.nome.value.trim();
   const telefone = form.telefone.value.trim();
-  const email = form.email.value.trim();
   const cpf = form.cpf.value.trim();
+  const lgpd = form['lgpd-consent'].checked;
 
-  if (!nome || !telefone || !email || !cpf) {
+  if (!nome || !telefone || !cpf) {
     erroMsg.textContent = 'Preencha todos os campos.';
+    return;
+  }
+  if (!lgpd) {
+    erroMsg.textContent = 'Você precisa aceitar os termos de uso dos dados.';
     return;
   }
   if (!validarCPF(cpf)) {
@@ -149,8 +224,8 @@ form.onsubmit = function (e) {
     return;
   }
 
-  jogadorCPF = cpf;
-  salvarJogador(nome, telefone, email, cpf);
+  state.jogadorCPF = cpf;
+  salvarJogador(nome, telefone, cpf);
   iniciarJogo();
 };
 
@@ -158,18 +233,18 @@ form.onsubmit = function (e) {
 function iniciarJogo() {
   showScreen(screens.jogo);
   board.innerHTML = '';
-  tentativas = 0;
+  state.tentativas = 0;
   timers.tentativas.textContent = '0';
   timers.progress.style.width = '100%';
   timers.progress.style.background = 'var(--verde-sicredi)';
 
   const pares = shuffle([...icons, ...icons]);
-  cards = pares.map((icon, i) => criarCarta(icon, i));
-  lockBoard = true;
+  state.cards = pares.map((icon, i) => criarCarta(icon, i));
+  state.lockBoard = true;
 
-  // Mostra todas as cartas por tempoMemorizar
-  cards.forEach(card => card.classList.add('flipped'));
-  let tempo = tempoMemorizar;
+  // Mostra todas as cartas por state.tempoMemorizar
+  state.cards.forEach(card => card.classList.add('flipped'));
+  let tempo = state.tempoMemorizar;
   timers.memorizar.textContent = `${tempo}s`;
 
   const memorizarInterval = setInterval(() => {
@@ -178,11 +253,11 @@ function iniciarJogo() {
     if (tempo <= 0) clearInterval(memorizarInterval);
   }, 1000);
 
-  memorizarTimeout = setTimeout(() => {
-    cards.forEach(card => card.classList.remove('flipped'));
-    lockBoard = false;
+  state.memorizarTimeout = setTimeout(() => {
+    state.cards.forEach(card => card.classList.remove('flipped'));
+    state.lockBoard = false;
     iniciarTempoJogo();
-  }, tempoMemorizar * 1000);
+  }, state.tempoMemorizar * 1000);
 }
 
 function criarCarta(icon, index) {
@@ -193,61 +268,63 @@ function criarCarta(icon, index) {
     <div class="card-inner card-front"></div>
     <div class="card-inner card-back"><img src="${icon}" alt="ícone" draggable="false"></div>
   `;
-  card.addEventListener('click', flipCard);
   board.appendChild(card);
   return card;
 }
 
 // ===== LÓGICA DO JOGO =====
 function iniciarTempoJogo() {
-  let tempo = tempoTotal;
-  timers.jogo.textContent = `${tempo}s`;
+  state.tempoRestante = state.tempoTotal;
+  timers.jogo.textContent = `${state.tempoRestante}s`;
   timers.memorizar.textContent = '';
   timers.progress.style.width = '100%';
 
-  jogoInterval = setInterval(() => {
-    tempo--;
-    timers.jogo.textContent = `${tempo}s`;
+  state.jogoInterval = setInterval(() => {
+    state.tempoRestante--;
+    timers.jogo.textContent = `${state.tempoRestante}s`;
 
-    const percent = (tempo / tempoTotal) * 100;
+    const percent = (state.tempoRestante / state.tempoTotal) * 100;
     timers.progress.style.width = `${percent}%`;
 
     if (percent > 60) timers.progress.style.background = 'var(--verde-sicredi)';
     else if (percent > 30) timers.progress.style.background = 'var(--amarelo)';
     else timers.progress.style.background = 'var(--vermelho)';
 
-    if (tempo <= 5) timers.jogo.classList.add('critical');
+    if (state.tempoRestante <= 5) timers.jogo.classList.add('critical');
     else timers.jogo.classList.remove('critical');
 
-    if (tempo <= 0) {
-      clearInterval(jogoInterval);
-      encerrarJogo(false);
-    }
+    if (state.tempoRestante <= 0) encerrarJogo(false);
   }, 1000);
-
-  jogoTimeout = setTimeout(() => encerrarJogo(false), tempoTotal * 1000);
 }
 
-function flipCard() {
-  if (lockBoard || this.classList.contains('flipped') || this.classList.contains('matched')) return;
-  this.classList.add('flipped');
-  flippedCards.push(this);
+function handleBoardClick(event) {
+  const clickedCard = event.target.closest('.card');
+  if (!clickedCard || state.lockBoard || clickedCard.classList.contains('flipped') || clickedCard.classList.contains('matched')) {
+    return;
+  }
 
-  if (flippedCards.length === 2) {
-    tentativas++;
-    timers.tentativas.textContent = tentativas;
+  playAudio(sounds.flip);
+
+  clickedCard.classList.add('flipped');
+  state.flippedCards.push(clickedCard);
+
+  if (state.flippedCards.length === 2) {
+    state.tentativas++;
+    timers.tentativas.textContent = state.tentativas;
     verificarPar();
   }
 }
 
 function verificarPar() {
-  lockBoard = true;
-  const [card1, card2] = flippedCards;
+  state.lockBoard = true;
+  const [card1, card2] = state.flippedCards;
   if (card1.dataset.icon === card2.dataset.icon) {
+    playAudio(sounds.match);
+
     card1.classList.add('matched');
     card2.classList.add('matched');
-    flippedCards = [];
-    lockBoard = false;
+    state.flippedCards = [];
+    state.lockBoard = false;
 
     // Evita lag de virada dupla
     requestAnimationFrame(() => {
@@ -255,28 +332,38 @@ function verificarPar() {
       card2.style.transform = 'rotateY(180deg)';
     });
 
-    if (document.querySelectorAll('.matched').length === cards.length) {
+    if (document.querySelectorAll('.matched').length === state.cards.length) {
       encerrarJogo(true);
     }
   } else {
     setTimeout(() => {
       card1.classList.remove('flipped');
       card2.classList.remove('flipped');
-      flippedCards = [];
-      lockBoard = false;
-    }, 700);
+      state.flippedCards = [];
+      state.lockBoard = false;
+    }, TEMPO_DESVIRAR_CARTA);
   }
 }
 
 function encerrarJogo(venceu) {
-  clearTimeout(memorizarTimeout);
-  clearTimeout(jogoTimeout);
-  clearInterval(jogoInterval);
-  marcarCPFusado(jogadorCPF);
+  clearTimeout(state.memorizarTimeout);
+  state.lockBoard = true; // Trava o tabuleiro para evitar cliques extras
+  clearInterval(state.jogoInterval);
+  marcarCPFusado(state.jogadorCPF);
+  
+  const tempoGasto = state.tempoTotal - state.tempoRestante;
+  
+  if (venceu) {
+    salvarPontuacao(form.nome.value.trim(), tempoGasto);
+    renderizarRanking();
+    finalTimeEl.textContent = `${tempoGasto}s`;
+    finalAttemptsEl.textContent = state.tentativas;
+  } else {
+    const paresEncontrados = document.querySelectorAll('.matched').length / 2;
+    pairsFoundEl.textContent = paresEncontrados;
+  }
 
-  setTimeout(() => {
-    showScreen(venceu ? screens.premio : screens.fail);
-  }, 400);
+  showScreen(venceu ? screens.premio : screens.fail);
 }
 
 // ===== FLUXO =====
@@ -286,103 +373,29 @@ btnVoltarFail.onclick = resetarJogo;
 function resetarJogo() {
   form.reset();
   erroMsg.textContent = '';
-  flippedCards = [];
-  cards = [];
+
+  // Reseta o estado do jogo, mas mantém as configurações de tempo
+  Object.assign(state, {
+    ...initialState,
+    tempoTotal: state.tempoTotal,
+    tempoMemorizar: state.tempoMemorizar,
+  });
+
   showScreen(screens.cadastro);
 }
-
-// ===== TECLADO VIRTUAL =====
-function teclaClicada(tecla) {
-  if (!inputAtivo) return;
-  if (tecla === 'espaço') {
-    tecla = ' '; // Converte a palavra-chave em um caractere de espaço
-  }
-  switch (tecla) {
-    case '←':
-      inputAtivo.value = inputAtivo.value.slice(0, -1);
-      break;
-    case 'Próximo': {
-      const campos = Array.from(form.querySelectorAll('input'));
-      const idx = campos.indexOf(inputAtivo);
-      if (idx > -1 && idx < campos.length - 1) {
-        campos[idx + 1].focus();
-      }
-      break;
-    }
-    default:
-      if ((inputAtivo.id === 'cpf' || inputAtivo.id === 'telefone') && inputAtivo.value.length >= 11) return;
-      inputAtivo.value += tecla;
-      break;
-  }
-}
-
-function criarLayoutTeclado(container, layout) {
-  container.innerHTML = ''; // Limpa o container antes de construir
-
-  layout.forEach(linha => {
-    const divLinha = document.createElement('div');
-    divLinha.className = 'linha-teclado';
-    linha.forEach(tecla => {
-      const btn = document.createElement('button');
-      btn.className = 'tecla';
-      btn.textContent = tecla;
-
-      // Adiciona classes e IDs para teclas especiais
-      if (tecla === 'espaço') {
-        btn.id = 'tecla-espaco';
-        btn.classList.add('tecla-especial');
-      } else if (tecla === 'Próximo') {
-        btn.id = 'tecla-proximo';
-        btn.classList.add('tecla-especial');
-      } else if (tecla === '←') {
-        btn.classList.add('tecla-func');
-      }
-
-      btn.onclick = () => teclaClicada(tecla);
-      divLinha.appendChild(btn);
-    });
-    container.appendChild(divLinha);
-  });
-}
-
-function mostrarTeclado(tipo) {
-  const isNumeric = tipo === 'number';
-  tecladoAlfanumericoContainer.style.display = isNumeric ? 'none' : 'flex';
-  tecladoNumericoContainer.style.display = isNumeric ? 'flex' : 'none';
-}
-
-form.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"]').forEach(input => {
-  input.addEventListener('focus', (e) => {
-    inputAtivo = e.target;
-    mostrarTeclado(input.id === 'telefone' || input.id === 'cpf' ? 'number' : 'text');
-  });
-});
 
 // ===== BLOQUEIOS DE PÁGINA =====
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.querySelectorAll('#cadastro-form input').forEach(input => {
   input.setAttribute('autocomplete', 'new-' + input.id);
   input.setAttribute('readonly', true);
-  setTimeout(() => input.removeAttribute('readonly'), 500);
+  setTimeout(() => input.removeAttribute('readonly'), 500); // Previne autofill em alguns navegadores
 });
 
 // ===== INICIALIZAÇÃO =====
 showScreen(screens.cadastro);
 
+board.addEventListener('click', handleBoardClick); // Event Delegation
 // Cria os teclados uma única vez na inicialização
-const layoutAlfanumerico = [
-  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '←'],
-  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '@', '.'],
-  ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
-  ['espaço', 'Próximo'],
-];
-const layoutNumerico = [
-  ['1', '2', '3'],
-  ['4', '5', '6'],
-  ['7', '8', '9'],
-  ['0', '←', 'Próximo'],
-];
-
-criarLayoutTeclado(tecladoAlfanumericoContainer, layoutAlfanumerico);
-criarLayoutTeclado(tecladoNumericoContainer, layoutNumerico);
+const tecladoNumericoContainer = document.getElementById('teclado-numerico');
+new Keyboard(form, tecladoAlfanumericoContainer, tecladoNumericoContainer);

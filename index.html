@@ -15,8 +15,11 @@
         <div class="header-inner">
           <h1 class="title-centered">Jogo da Memória - Sicredi</h1>
         </div>
-        <button id="btn-settings" class="settings-btn" title="Configurações">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19.829 15.092C19.921 14.746 20 14.379 20 14c0-.379-.079-.746-.171-1.092l1.74-1.351a.5.5 0 0 0 .113-.633l-1.414-2.45a.5.5 0 0 0-.584-.233l-2.09.836a8.21 8.21 0 0 0-2.164-1.24L15.03 5.15a.5.5 0 0 0-.498-.498h-2.828a.5.5 0 0 0-.498.498L10.88 7.834a8.21 8.21 0 0 0-2.164 1.24l-2.09-.836a.5.5 0 0 0-.584.233l-1.414 2.45a.5.5 0 0 0 .113.633l1.74 1.351C4.079 13.254 4 13.621 4 14c0 .379.079.746.171 1.092l-1.74 1.351a.5.5 0 0 0-.113.633l1.414 2.45a.5.5 0 0 0 .584.233l2.09-.836a8.21 8.21 0 0 0 2.164 1.24l.324 2.684a.5.5 0 0 0 .498.498h2.828a.5.5 0 0 0 .498-.498l.324-2.684a8.21 8.21 0 0 0 2.164-1.24l2.09.836a.5.5 0 0 0 .584-.233l1.414-2.45a.5.5 0 0 0-.113-.633l-1.74-1.351ZM12 16.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Z"/></svg>
+        <button id="btn-settings" class="settings-btn" title="Configurações" aria-label="Abrir Configurações">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+            <title>Configurações</title>
+            <path d="M19.829 15.092C19.921 14.746 20 14.379 20 14c0-.379-.079-.746-.171-1.092l1.74-1.351a.5.5 0 0 0 .113-.633l-1.414-2.45a.5.5 0 0 0-.584-.233l-2.09.836a8.21 8.21 0 0 0-2.164-1.24L15.03 5.15a.5.5 0 0 0-.498-.498h-2.828a.5.5 0 0 0-.498.498L10.88 7.834a8.21 8.21 0 0 0-2.164 1.24l-2.09-.836a.5.5 0 0 0-.584.233l-1.414 2.45a.5.5 0 0 0 .113.633l1.74 1.351C4.079 13.254 4 13.621 4 14c0 .379.079.746.171 1.092l-1.74 1.351a.5.5 0 0 0-.113.633l1.414 2.45a.5.5 0 0 0 .584.233l2.09-.836a8.21 8.21 0 0 0 2.164 1.24l.324 2.684a.5.5 0 0 0 .498.498h2.828a.5.5 0 0 0 .498.498l.324-2.684a8.21 8.21 0 0 0 2.164-1.24l2.09.836a.5.5 0 0 0 .584-.233l1.414-2.45a.5.5 0 0 0-.113-.633l-1.74-1.351ZM12 16.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Z"/>
+          </svg>
         </button>
       </header>
 
@@ -31,22 +34,22 @@
             <label for="telefone">Telefone</label>
           </div>
           <div class="form-group">
-            <input id="email" name="novo-email" type="email" inputmode="email" autocomplete="new-email" autocorrect="off" autocapitalize="none" spellcheck="false" required placeholder=" " />
-            <label for="email">Email</label>
-          </div>
-          <div class="form-group">
             <input id="cpf" name="novo-cpf" type="text" inputmode="numeric" autocomplete="new-cpf" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="11" required placeholder=" " />
             <label for="cpf">CPF</label>
           </div>
-
+          
+          <div class="form-group-checkbox">
+            <input type="checkbox" id="lgpd-consent" name="lgpd-consent" required>
+            <label for="lgpd-consent">Li e concordo com o uso dos meus dados para esta campanha, conforme a LGPD.</label>
+          </div>
+          
           <div id="cadastro-erro" class="erro-msg" aria-live="assertive"></div>
           <button class="btn-primary" type="submit">Começar jogo</button>
         </form>
-
-        <div id="teclado-virtual" class="teclado teclado-totem">
-          <div id="teclado-alfanumerico"></div>
-          <div id="teclado-numerico" style="display: none;"></div>
-        </div>
+      </div>
+      <div id="teclado-virtual" class="teclado teclado-totem">
+        <div id="teclado-alfanumerico"></div>
+        <div id="teclado-numerico" style="display: none;"></div>
       </div>
     </section>
 
@@ -76,8 +79,19 @@
     <!-- ========== TELA DE PREMIAÇÃO ========== -->
     <section id="premio-section" class="screen result-screen">
       <div class="result-card success">
-        <h2>Parabéns!</h2>
-        <p>Você concluiu o jogo da memória com sucesso.</p>
+        <div class="result-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="64" height="64"><path d="M12.89,2.1L12,2L11.11,2.1C7.6,2.36 5.06,5.29 5.06,8.84C5.06,10.43 5.5,11.94 6.28,13.25L5,14.54V19H6.5L7.8,17.7C9.06,18.5 10.5,19 12,19C13.5,19 14.94,18.5 16.2,17.7L17.5,19H19V14.54L17.72,13.25C18.5,11.94 18.94,10.43 18.94,8.84C18.94,5.29 16.4,2.36 12.89,2.1M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M7,20V22H17V20H7Z" /></svg>
+        </div>
+        <h2>Vitória!</h2>
+        <p>Você completou o desafio com sucesso. Parabéns!</p>
+        <div class="player-stats">
+          <span>Tempo: <strong id="final-time">--</strong></span>
+          <span>Tentativas: <strong id="final-attempts">--</strong></span>
+        </div>
+        <div class="ranking-container">
+          <h3>🏆 Top 5 Tempos 🏆</h3>
+          <ol id="ranking-list"></ol>
+        </div>
         <button id="voltar-cadastro-premio" class="btn-primary">Jogar novamente</button>
       </div>
     </section>
@@ -85,8 +99,12 @@
     <!-- ========== TELA DE FALHA ========== -->
     <section id="fail-section" class="screen result-screen">
       <div class="result-card fail">
+        <div class="result-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="64" height="64"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,15H13V17H11V15M11,7H13V13H11V7Z" /></svg>
+        </div>
         <h2>Tempo esgotado!</h2>
-        <p>Tente novamente para ganhar o prêmio.</p>
+        <p>Não foi desta vez, mas você chegou perto! Que tal tentar de novo?</p>
+        <p class="fail-stats">Você encontrou <strong id="pairs-found">0</strong> pares.</p>
         <button id="voltar-cadastro-fail" class="btn-primary">Tentar novamente</button>
       </div>
     </section>
@@ -130,6 +148,7 @@
     </div>
   </div>
 
+  <script src="keyboard.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

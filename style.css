@@ -11,6 +11,11 @@
   --branco: #ffffff;
   --cinza-claro: #f1f1f1;
   --cinza-texto: #333;
+
+  /* Valores de UI */
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --transition-fast: 0.2s ease-out;
 }
 
 * {
@@ -35,16 +40,35 @@ main {
 
 /* ===== Telas ===== */
 .screen {
-  display: none;
+  /* Ajustes para permitir sobreposição e animação */
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s;
+
+  /* Mantém o layout flexível interno */
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 20px;
   height: 100%;
 }
-
 .screen.active {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  z-index: 10;
+  animation: slideIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+main {
+  position: relative; /* Essencial para o posicionamento absoluto das telas */
+}
+
+/* Ajuste para centralizar o conteúdo da tela de jogo */
+#jogo-section {
+  justify-content: center;
 }
 
 /* ===== Cabeçalho ===== */
@@ -84,7 +108,8 @@ h1, h2, h3 {
 .title-centered {
   text-align: center;
   width: 100%;
-  font-size: 1.4rem;
+  font-size: 2.2rem;
+  font-weight: 600;
 }
 
 /* ===== Botão de Configurações ===== */
@@ -121,7 +146,7 @@ h1, h2, h3 {
 
 .overlay-panel {
   background: var(--branco);
-  border-radius: 16px;
+  border-radius: var(--border-radius-md);
   width: 90%;
   max-width: 420px;
   padding: 22px;
@@ -180,9 +205,9 @@ h1, h2, h3 {
   padding: 8px 16px;
   border: 2px solid var(--verde-medio);
   color: var(--verde-medio);
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease-out;
+  transition: all var(--transition-fast);
   font-weight: 500;
 }
 
@@ -212,9 +237,32 @@ h1, h2, h3 {
   from {opacity: 0; transform: scale(0.9);}
   to {opacity: 1; transform: scale(1);}
 }
+@keyframes tada {
+  from { transform: scale3d(1, 1, 1); }
+  10%, 20% { transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg); }
+  30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); }
+  40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); }
+  to { transform: scale3d(1, 1, 1); }
+}
 @keyframes spin {
   from {transform: rotate(0deg);}
   to {transform: rotate(90deg);}
+}
+
+/* Animações de transição de tela */
+@keyframes slideIn {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-30px) scale(0.95); opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
+.screen-exit {
+  animation: slideOut 0.35s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+  z-index: 5; /* Garante que a tela de saída fique atrás da nova */
 }
 
 /* ===== Formulário ===== */
@@ -223,7 +271,7 @@ h1, h2, h3 {
   max-width: 400px;
   background: var(--branco);
   padding: 25px;
-  border-radius: 16px;
+  border-radius: var(--border-radius-md);
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
@@ -239,7 +287,7 @@ h1, h2, h3 {
   left: 14px;
   color: #888;
   pointer-events: none;
-  transition: all 0.2s ease-out;
+  transition: all var(--transition-fast);
   background-color: var(--branco);
   padding: 0 4px;
 }
@@ -257,7 +305,7 @@ input {
   padding: 12px 14px;
   margin-bottom: 10px;
   border: 2px solid var(--verde-sicredi);
-  border-radius: 10px;
+  border-radius: var(--border-radius-sm);
   font-size: 1.1rem;
   background: transparent;
 }
@@ -266,11 +314,17 @@ input:focus {
   border-color: var(--verde-claro);
 }
 
+/* Adiciona um brilho sutil ao input ativo pelo teclado virtual */
+.form-group input.input-active {
+  box-shadow: 0 0 8px rgba(67, 160, 71, 0.5);
+  border-color: var(--verde-claro);
+}
+
 .btn-primary {
   background: var(--verde-sicredi);
   color: var(--branco);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm);
   padding: 12px 20px;
   font-size: 1rem;
   cursor: pointer;
@@ -280,11 +334,33 @@ input:focus {
   background: var(--verde-medio);
 }
 
+.form-group-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-group-checkbox input[type="checkbox"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  accent-color: var(--verde-sicredi);
+}
+
+.form-group-checkbox label {
+  font-size: 0.9rem;
+  color: #555;
+  cursor: pointer;
+}
+
 .btn-ghost {
   background: transparent;
   border: 2px solid var(--verde-sicredi);
   color: var(--verde-sicredi);
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm);
   padding: 10px 18px;
   cursor: pointer;
 }
@@ -298,11 +374,11 @@ input:focus {
   display: grid;
   justify-content: center;
   align-content: center;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(80px, 18vw, 140px), 1fr));
   gap: 18px;
   width: 94vw;
   max-width: 640px;
-  margin: 0 auto;
+  margin: 10px auto;
   perspective: 1000px;
 }
 
@@ -310,23 +386,30 @@ input:focus {
   position: relative;
   width: 100%;
   aspect-ratio: 1/1;
-  border-radius: 16px;
+  border-radius: var(--border-radius-md);
   border: 3px solid var(--verde-sicredi);
   background: #f8fcfa;
   transform-style: preserve-3d;
-  transition: transform 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.12);
 }
 .card-inner {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
+  border-radius: var(--border-radius-md);
   backface-visibility: hidden;
   overflow: hidden;
 }
 .card-front {
-  background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+  /* Design aprimorado com padrão e logo */
+  background-color: #e8f5e9;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239CCC65' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%231B5E20' opacity='0.08'%3E%3Cpath d='M12.89,2.1L12,2L11.11,2.1C7.6,2.36 5.06,5.29 5.06,8.84C5.06,10.43 5.5,11.94 6.28,13.25L5,14.54V19H6.5L7.8,17.7C9.06,18.5 10.5,19 12,19C13.5,19 14.94,18.5 16.2,17.7L17.5,19H19V14.54L17.72,13.25C18.5,11.94 18.94,10.43 18.94,8.84C18.94,5.29 16.4,2.36 12.89,2.1M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M7,20V22H17V20H7Z'/%3E%3C/svg%3E");
+  background-repeat: repeat, no-repeat;
+  background-position: center, center;
+  background-size: auto, 60%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,7 +438,7 @@ input:focus {
 
 /* ===== Teclado Virtual (ajustado) ===== */
 .teclado {
-  margin-top: 18px;
+  padding-bottom: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -380,10 +463,10 @@ input:focus {
   background: var(--verde-sicredi);
   color: var(--branco);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--border-radius-sm);
   padding: 18px 24px;
   font-size: 1.1rem;
-  cursor: pointer;
+  cursor: pointer; 
   flex: 1 1 auto;
   max-width: 70px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.15);
@@ -408,7 +491,7 @@ input:focus {
 .teclado-totem .tecla {
   padding: 18px 12px; /* Ajusta o padding para teclas mais largas */
   font-size: 1.2rem;
-  min-width: 60px;
+  min-width: clamp(45px, 8vw, 70px); /* Largura fluida */
   height: 60px;
   display: flex;
   align-items: center;
@@ -443,9 +526,28 @@ input:focus {
 .result-card {
   background: var(--branco);
   padding: 40px;
-  border-radius: 20px;
+  border-radius: var(--border-radius-md);
   text-align: center;
   box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.result-icon {
+  margin-bottom: 15px;
+}
+
+.result-card.success .result-icon {
+  color: var(--amarelo);
+  animation: tada 1s ease;
+}
+
+.result-card.fail .result-icon {
+  color: var(--vermelho);
+}
+
+.result-card p {
+  max-width: 300px;
+  margin: 10px auto;
+  line-height: 1.5;
 }
 
 .result-card.success h2 {
@@ -453,6 +555,55 @@ input:focus {
 }
 .result-card.fail h2 {
   color: #b71c1c;
+}
+.fail-stats {
+  font-size: 1rem;
+  color: #555;
+  background-color: var(--cinza-claro);
+  padding: var(--border-radius-sm);
+  border-radius: var(--border-radius-sm);
+  margin-top: 20px;
+}
+
+.player-stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.ranking-container {
+  margin: 25px 0;
+  width: 100%;
+  max-width: 300px;
+  text-align: left;
+  border-top: 1px solid #ddd;
+  padding-top: 20px;
+}
+
+.ranking-container h3 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: var(--verde-medio);
+}
+
+#ranking-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#ranking-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--border-radius-sm) 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+#ranking-list li:nth-child(odd) {
+  background-color: var(--cinza-claro);
 }
 
 /* ===== HUD / Painel de Tempo ===== */
@@ -497,7 +648,7 @@ input:focus {
   flex-direction: column;
   align-items: center;
   background: #e8f5e9;
-  border-radius: 12px;
+  border-radius: var(--border-radius-md);
   padding: 6px 12px;
 }
 
