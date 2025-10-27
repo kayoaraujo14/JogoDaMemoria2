@@ -373,6 +373,7 @@ btnVoltarFail.onclick = resetarJogo;
 function resetarJogo() {
   form.reset();
   erroMsg.textContent = '';
+  timers.jogo.classList.remove('critical');
 
   // Reseta o estado do jogo, mas mantém as configurações de tempo
   Object.assign(state, {
