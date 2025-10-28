@@ -37,6 +37,23 @@
             <input id="cpf" name="novo-cpf" type="text" inputmode="numeric" autocomplete="new-cpf" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="11" required placeholder=" " />
             <label for="cpf">CPF</label>
           </div>
+
+          <div class="form-group">
+            <select id="orgao" name="orgao" required>
+              <option value="" disabled selected>Selecione seu órgão</option>
+              <option value="orgao1">Órgão 1</option>
+              <option value="orgao2">Órgão 2</option>
+              <option value="orgao3">Órgão 3</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div class="radio-group">
+              <label><input type="radio" name="vinculo" value="associado" required> Associado</label>
+              <label><input type="radio" name="vinculo" value="familiar"> Familiar de Associado</label>
+              <label><input type="radio" name="vinculo" value="outro"> Outro</label>
+            </div>
+          </div>
           
           <div class="form-group-checkbox">
             <input type="checkbox" id="lgpd-consent" name="lgpd-consent" required>

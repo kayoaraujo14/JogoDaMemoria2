@@ -1,8 +1,18 @@
+const { JSDOM } = require('jsdom');
+
 // Mocking the DOM for testing
-document.body.innerHTML = `
-  <div id="jogo-timer"></div>
-  <form id="cadastro-form"></form>
-`;
+const dom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+    <body>
+      <div id="jogo-timer"></div>
+      <form id="cadastro-form"></form>
+    </body>
+  </html>
+`);
+
+global.document = dom.window.document;
+
 const timers = {
   jogo: document.getElementById('jogo-timer'),
 };

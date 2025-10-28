@@ -126,9 +126,9 @@ function marcarCPFusado(cpf) {
   usados.push(cpf);
   localStorage.setItem(STORAGE_KEYS.CPFS_USADOS, JSON.stringify(usados));
 }
-function salvarJogador(nome, telefone, cpf) {
+function salvarJogador(nome, telefone, cpf, orgao, vinculo) {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
-  jogadores.push({ nome, telefone, cpf });
+  jogadores.push({ nome, telefone, cpf, orgao, vinculo });
   localStorage.setItem(STORAGE_KEYS.JOGADORES, JSON.stringify(jogadores));
 }
 
@@ -137,10 +137,10 @@ btnCSV.onclick = function () {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
   if (jogadores.length === 0) return alert('Nenhum dado para exportar.');
 
-  const linhas = ["Nome,Telefone,CPF"];
+  const linhas = ["Nome,Telefone,CPF,Orgao,Vinculo"];
   jogadores.forEach(j => {
     // Escapa aspas duplas dentro dos valores, se houver
-    linhas.push([j.nome, j.telefone, j.cpf].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
+    linhas.push([j.nome, j.telefone, j.cpf, j.orgao, j.vinculo].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
   });
 
   const blob = new Blob([linhas.join("\n")], { type: 'text/csv;charset=utf-8;' });
@@ -202,9 +202,11 @@ form.onsubmit = function (e) {
   const nome = form.nome.value.trim();
   const telefone = form.telefone.value.trim();
   const cpf = form.cpf.value.trim();
+  const orgao = form.orgao.value;
+  const vinculo = form.vinculo.value;
   const lgpd = form['lgpd-consent'].checked;
 
-  if (!nome || !telefone || !cpf) {
+  if (!nome || !telefone || !cpf || !orgao || !vinculo) {
     erroMsg.textContent = 'Preencha todos os campos.';
     return;
   }
@@ -222,7 +224,7 @@ form.onsubmit = function (e) {
   }
 
   state.jogadorCPF = cpf;
-  salvarJogador(nome, telefone, cpf);
+  salvarJogador(nome, telefone, cpf, orgao, vinculo);
   iniciarJogo();
 };
 
@@ -327,12 +329,6 @@ function verificarPar() {
     card2.classList.add('matched');
     state.flippedCards = [];
     state.lockBoard = false;
-
-    // Evita lag de virada dupla
-    requestAnimationFrame(() => {
-      card1.style.transform = 'rotateY(180deg)';
-      card2.style.transform = 'rotateY(180deg)';
-    });
 
     if (document.querySelectorAll('.matched').length === state.cards.length) {
       encerrarJogo(true);
