@@ -18,11 +18,17 @@ const timers = {
 };
 const form = document.getElementById('cadastro-form');
 
+/**
+ * Resets the game to its initial state.
+ */
 function resetarJogo() {
   form.reset();
   timers.jogo.classList.remove('critical');
 }
 
+/**
+ * Runs the test suite.
+ */
 function runTest() {
   console.log("Running test: Checking if 'critical' class is removed from timer");
 

@@ -85,6 +85,10 @@ const icons = [
   'imagens/icon9.png'
 ];
 
+/**
+ * Manages screen transitions with CSS animations.
+ * @param {HTMLElement} screenToShow The screen element to be displayed.
+ */
 function showScreen(screenToShow) {
   const currentScreen = document.querySelector('.screen.active');
 
@@ -98,6 +102,10 @@ function showScreen(screenToShow) {
   screenToShow.classList.add('active');
 }
 
+/**
+ * Plays a sound effect.
+ * @param {HTMLAudioElement} sound The audio element to play.
+ */
 function playAudio(sound) {
   if (sound && typeof sound.play === 'function') {
     sound.currentTime = 0;
@@ -106,6 +114,12 @@ function playAudio(sound) {
     });
   }
 }
+
+/**
+ * Shuffles an array in place.
+ * @param {Array<any>} array The array to be shuffled.
+ * @returns {Array<any>} The shuffled array.
+ */
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -114,18 +128,43 @@ function shuffle(array) {
   return array;
 }
 
+/**
+ * Validates a CPF.
+ * @param {string} cpf The CPF to validate.
+ * @returns {boolean} True if the CPF is valid, false otherwise.
+ */
 function validarCPF(cpf) {
   return /^\d{11}$/.test(cpf);
 }
+
+/**
+ * Checks if a CPF has already been used.
+ * @param {string} cpf The CPF to check.
+ * @returns {boolean} True if the CPF has been used, false otherwise.
+ */
 function cpfJaUsado(cpf) {
   const usados = JSON.parse(localStorage.getItem(STORAGE_KEYS.CPFS_USADOS) || '[]');
   return usados.includes(cpf);
 }
+
+/**
+ * Marks a CPF as used.
+ * @param {string} cpf The CPF to mark as used.
+ */
 function marcarCPFusado(cpf) {
   const usados = JSON.parse(localStorage.getItem(STORAGE_KEYS.CPFS_USADOS) || '[]');
   usados.push(cpf);
   localStorage.setItem(STORAGE_KEYS.CPFS_USADOS, JSON.stringify(usados));
 }
+
+/**
+ * Saves player data to localStorage.
+ * @param {string} nome The player's name.
+ * @param {string} telefone The player's phone number.
+ * @param {string} cpf The player's CPF.
+ * @param {string} orgao The player's organization.
+ * @param {string} vinculo The player's relationship with the organization.
+ */
 function salvarJogador(nome, telefone, cpf, orgao, vinculo) {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
   jogadores.push({ nome, telefone, cpf, orgao, vinculo });
@@ -133,6 +172,10 @@ function salvarJogador(nome, telefone, cpf, orgao, vinculo) {
 }
 
 // ===== EXPORTAÇÃO CSV (agora limpa registros após baixar) =====
+/**
+ * Handles the click event for the CSV download button.
+ * Exports player data to a CSV file and clears localStorage.
+ */
 btnCSV.onclick = function () {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
   if (jogadores.length === 0) return alert('Nenhum dado para exportar.');
@@ -159,6 +202,11 @@ btnCSV.onclick = function () {
 };
 
 // ===== RANKING =====
+/**
+ * Saves the player's score to the ranking.
+ * @param {string} nome The player's name.
+ * @param {number} tempo The time taken to complete the game.
+ */
 function salvarPontuacao(nome, tempo) {
   const ranking = JSON.parse(localStorage.getItem(STORAGE_KEYS.RANKING) || '[]');
   ranking.push({ nome, tempo });
@@ -167,6 +215,9 @@ function salvarPontuacao(nome, tempo) {
   localStorage.setItem(STORAGE_KEYS.RANKING, JSON.stringify(top5));
 }
 
+/**
+ * Renders the ranking on the screen.
+ */
 function renderizarRanking() {
   const ranking = JSON.parse(localStorage.getItem(STORAGE_KEYS.RANKING) || '[]');
   rankingList.innerHTML = '';
@@ -195,6 +246,10 @@ radioTempoMemorizar.forEach(radio => {
 });
 
 // ===== FORMULÁRIO =====
+/**
+ * Handles the form submission.
+ * @param {SubmitEvent} e The submit event.
+ */
 form.onsubmit = function (e) {
   e.preventDefault();
   erroMsg.textContent = '';
@@ -229,6 +284,9 @@ form.onsubmit = function (e) {
 };
 
 // ===== INÍCIO DO JOGO =====
+/**
+ * Starts the memory game.
+ */
 function iniciarJogo() {
   // 1. Inicia a transição de tela imediatamente para uma resposta visual rápida
   showScreen(screens.jogo);
@@ -264,6 +322,12 @@ function iniciarJogo() {
   }, 0); // setTimeout com 0ms adia a execução para após a renderização atual
 }
 
+/**
+ * Creates a card element.
+ * @param {string} icon The path to the icon for the card.
+ * @param {number} index The index of the card.
+ * @returns {HTMLElement} The card element.
+ */
 function criarCarta(icon, index) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -277,6 +341,9 @@ function criarCarta(icon, index) {
 }
 
 // ===== LÓGICA DO JOGO =====
+/**
+ * Starts the game timer.
+ */
 function iniciarTempoJogo() {
   state.tempoRestante = state.tempoTotal;
   timers.jogo.textContent = `${state.tempoRestante}s`;
@@ -301,6 +368,10 @@ function iniciarTempoJogo() {
   }, 1000);
 }
 
+/**
+ * Handles clicks on the game board.
+ * @param {MouseEvent} event The click event.
+ */
 function handleBoardClick(event) {
   const clickedCard = event.target.closest('.card');
   if (!clickedCard || state.lockBoard || clickedCard.classList.contains('flipped') || clickedCard.classList.contains('matched')) {
@@ -319,6 +390,9 @@ function handleBoardClick(event) {
   }
 }
 
+/**
+ * Checks if the two flipped cards are a match.
+ */
 function verificarPar() {
   state.lockBoard = true;
   const [card1, card2] = state.flippedCards;
@@ -343,6 +417,10 @@ function verificarPar() {
   }
 }
 
+/**
+ * Ends the game.
+ * @param {boolean} venceu True if the player won, false otherwise.
+ */
 function encerrarJogo(venceu) {
   clearTimeout(state.memorizarTimeout);
   state.lockBoard = true; // Trava o tabuleiro para evitar cliques extras
@@ -373,6 +451,9 @@ function encerrarJogo(venceu) {
 btnVoltarPremio.onclick = resetarJogo;
 btnVoltarFail.onclick = resetarJogo;
 
+/**
+ * Resets the game to its initial state.
+ */
 function resetarJogo() {
   form.reset();
   erroMsg.textContent = '';
