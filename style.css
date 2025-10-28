@@ -43,23 +43,24 @@ main {
   /* Ajustes para permitir sobreposição e animação */
   position: absolute;
   inset: 0;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.4s ease, visibility 0.4s;
+  opacity: 1;
+  visibility: hidden; /* Controla a visibilidade inicial */
+  transform: translateY(20px);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s;
 
   /* Mantém o layout flexível interno */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 20px;
+  padding: 20px; 
   height: 100%;
 }
 .screen.active {
-  opacity: 1;
   visibility: visible;
   z-index: 10;
-  animation: slideIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform: translateY(0);
+  opacity: 1;
 }
 
 main {
@@ -249,20 +250,11 @@ h1, h2, h3 {
   to {transform: rotate(90deg);}
 }
 
-/* Animações de transição de tela */
-@keyframes slideIn {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes slideOut {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-30px) scale(0.95); opacity: 0; visibility: hidden; pointer-events: none; }
-}
-
+/* Animação de saída de tela */
 .screen-exit {
-  animation: slideOut 0.35s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
-  z-index: 5; /* Garante que a tela de saída fique atrás da nova */
+  opacity: 0;
+  transform: translateY(-20px);
+  z-index: 5; /* Garante que a tela de saída fique atrás da nova tela ativa */
 }
 
 /* ===== Formulário ===== */

@@ -37,7 +37,7 @@ const timers = {
 };
 
 // ===== CONSTANTES =====
-const TEMPO_ANIMACAO_TELA = 350; // ms
+const TEMPO_ANIMACAO_TELA = 300; // ms (deve corresponder à transição do CSS)
 const TEMPO_DESVIRAR_CARTA = 700; // ms
 const STORAGE_KEYS = {
   JOGADORES: 'jogadores',
@@ -83,22 +83,17 @@ const icons = [
   'imagens/icon9.png'
 ];
 
-function showScreen(newScreen) {
+function showScreen(screenToShow) {
   const currentScreen = document.querySelector('.screen.active');
 
   if (currentScreen) {
-    if (currentScreen === newScreen) return; // Não faz nada se for a mesma tela
-    
-    // Agenda a remoção da tela antiga após a animação de forma confiável
-    setTimeout(() => {
-      currentScreen.classList.remove('active', 'screen-exit');
-    }, TEMPO_ANIMACAO_TELA); // Usa a constante já definida
+    if (currentScreen === screenToShow) return;
     currentScreen.classList.add('screen-exit');
+    currentScreen.classList.remove('active');
   }
 
-  // Ativa a nova tela imediatamente para que a animação de entrada comece
-  newScreen.classList.add('active');
-  newScreen.classList.remove('screen-exit');
+  screenToShow.classList.remove('screen-exit');
+  screenToShow.classList.add('active');
 }
 
 function playAudio(sound) {
@@ -231,33 +226,38 @@ form.onsubmit = function (e) {
 
 // ===== INÍCIO DO JOGO =====
 function iniciarJogo() {
+  // 1. Inicia a transição de tela imediatamente para uma resposta visual rápida
   showScreen(screens.jogo);
-  board.innerHTML = '';
-  state.tentativas = 0;
-  timers.tentativas.textContent = '0';
-  timers.progress.style.width = '100%';
-  timers.progress.style.background = 'var(--verde-sicredi)';
 
-  const pares = shuffle([...icons, ...icons]);
-  state.cards = pares.map((icon, i) => criarCarta(icon, i));
-  state.lockBoard = true;
+  // 2. Prepara o jogo em segundo plano (de forma assíncrona)
+  setTimeout(() => {
+    board.innerHTML = '';
+    state.tentativas = 0;
+    timers.tentativas.textContent = '0';
+    timers.progress.style.width = '100%';
+    timers.progress.style.background = 'var(--verde-sicredi)';
 
-  // Mostra todas as cartas por state.tempoMemorizar
-  state.cards.forEach(card => card.classList.add('flipped'));
-  let tempo = state.tempoMemorizar;
-  timers.memorizar.textContent = `${tempo}s`;
+    const pares = shuffle([...icons, ...icons]);
+    state.cards = pares.map((icon, i) => criarCarta(icon, i));
+    state.lockBoard = true;
 
-  const memorizarInterval = setInterval(() => {
-    tempo--;
+    // Mostra todas as cartas por state.tempoMemorizar
+    state.cards.forEach(card => card.classList.add('flipped'));
+    let tempo = state.tempoMemorizar;
     timers.memorizar.textContent = `${tempo}s`;
-    if (tempo <= 0) clearInterval(memorizarInterval);
-  }, 1000);
+
+    const memorizarInterval = setInterval(() => {
+      tempo--;
+      timers.memorizar.textContent = `${tempo}s`;
+      if (tempo <= 0) clearInterval(memorizarInterval);
+    }, 1000);
 
   state.memorizarTimeout = setTimeout(() => {
     state.cards.forEach(card => card.classList.remove('flipped'));
     state.lockBoard = false;
     iniciarTempoJogo();
   }, state.tempoMemorizar * 1000);
+  }, 0); // setTimeout com 0ms adia a execução para após a renderização atual
 }
 
 function criarCarta(icon, index) {
