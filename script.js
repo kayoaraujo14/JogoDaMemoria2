@@ -49,6 +49,8 @@ const STORAGE_KEYS = {
 const sounds = {
   flip: new Audio('sons/flip.mp3'),
   match: new Audio('sons/match.mp3'),
+  victory: new Audio('sons/victory.mp3'),
+  gameOver: new Audio('sons/game-over.mp3'),
 };
 
 // Estado inicial para referência e reset
@@ -354,11 +356,16 @@ function encerrarJogo(venceu) {
   const tempoGasto = state.tempoTotal - state.tempoRestante;
   
   if (venceu) {
+    playAudio(sounds.victory);
+    if (typeof confetti === 'function') {
+      confetti();
+    }
     salvarPontuacao(form.nome.value.trim(), tempoGasto);
     renderizarRanking();
     finalTimeEl.textContent = `${tempoGasto}s`;
     finalAttemptsEl.textContent = state.tentativas;
   } else {
+    playAudio(sounds.gameOver);
     const paresEncontrados = document.querySelectorAll('.matched').length / 2;
     pairsFoundEl.textContent = paresEncontrados;
   }

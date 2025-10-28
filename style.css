@@ -250,6 +250,12 @@ h1, h2, h3 {
   to {transform: rotate(90deg);}
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
 /* Animação de saída de tela */
 .screen-exit {
   opacity: 0;
@@ -386,6 +392,12 @@ input:focus {
   cursor: pointer;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.12);
 }
+
+.card:not(.flipped):not(.matched):hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
 .card-inner {
   position: absolute;
   inset: 0;
@@ -396,9 +408,8 @@ input:focus {
 .card-front {
   /* Design aprimorado com padrão e logo */
   background-color: #e8f5e9;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239CCC65' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%231B5E20' opacity='0.08'%3E%3Cpath d='M12.89,2.1L12,2L11.11,2.1C7.6,2.36 5.06,5.29 5.06,8.84C5.06,10.43 5.5,11.94 6.28,13.25L5,14.54V19H6.5L7.8,17.7C9.06,18.5 10.5,19 12,19C13.5,19 14.94,18.5 16.2,17.7L17.5,19H19V14.54L17.72,13.25C18.5,11.94 18.94,10.43 18.94,8.84C18.94,5.29 16.4,2.36 12.89,2.1M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M7,20V22H17V20H7Z'/%3E%3C/svg%3E");
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ctext x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='40' fill='%231B5E20' font-family='Arial'%3ESicredi%3C/text%3E%3C/svg%3E");
   background-repeat: repeat, no-repeat;
   background-position: center, center;
   background-size: auto, 60%;
@@ -426,6 +437,7 @@ input:focus {
   border-color: var(--verde-claro);
   box-shadow: 0 0 16px rgba(76,175,80,0.4);
   transform: rotateY(180deg) scale(1.03);
+  animation: shake 0.5s ease-in-out;
 }
 
 /* ===== Teclado Virtual (ajustado) ===== */
@@ -476,6 +488,10 @@ input:focus {
 }
 
 /* ===== Estilos do Teclado Totem ===== */
+#teclado-numerico .tecla {
+  background-color: var(--verde-medio);
+}
+
 .teclado-totem .linha-teclado {
   max-width: 980px; /* Aumenta a largura máxima do teclado */
 }
