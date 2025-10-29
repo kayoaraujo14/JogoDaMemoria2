@@ -254,9 +254,9 @@ form.onsubmit = function (e) {
   e.preventDefault();
   erroMsg.textContent = '';
 
-  const nome = form.nome.value.trim();
-  const telefone = form.telefone.value.trim();
-  const cpf = form.cpf.value.trim();
+  const nome = form.nome.value.trim(); // Remove espaços em branco
+  const telefone = form.telefone.value.replace(/\D/g, ''); // Remove formatação
+  const cpf = form.cpf.value.replace(/\D/g, ''); // Remove formatação
   const orgao = form.orgao.value;
   const vinculo = form.vinculo.value;
   const lgpd = form['lgpd-consent'].checked;
@@ -267,6 +267,10 @@ form.onsubmit = function (e) {
   }
   if (!lgpd) {
     erroMsg.textContent = 'Você precisa aceitar os termos de uso dos dados.';
+    return;
+  }
+  if (!/^\d+$/.test(telefone)) {
+    erroMsg.textContent = 'O telefone deve conter apenas números.';
     return;
   }
   if (!validarCPF(cpf)) {

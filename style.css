@@ -546,14 +546,6 @@ input:focus {
   max-width: 450px;
 }
 
-.teclado-totem #tecla-proximo {
-  flex-grow: 2;
-  max-width: 200px;
-  background: var(--verde-claro);
-  color: var(--branco);
-  font-weight: bold;
-}
-
 
 /* ===== Resultados ===== */
 .result-screen {
