@@ -32,15 +32,15 @@ class Keyboard {
     const layoutAlfanumerico = [
       ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
       ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '←'],
-      ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '@', '.'],
+      ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
       ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
-      ['espaço', 'Próximo'],
+      ['espaço'],
     ];
     const layoutNumerico = [
       ['1', '2', '3'],
       ['4', '5', '6'],
       ['7', '8', '9'],
-      ['0', '←', 'Próximo'],
+      ['placeholder', '0', '←'],
     ];
 
     this._buildKeyboardDOM(this.alfanumericoContainer, layoutAlfanumerico);
@@ -59,14 +59,23 @@ class Keyboard {
       const divLinha = document.createElement('div');
       divLinha.className = 'linha-teclado';
       linha.forEach(tecla => {
+        // Adiciona um espaço reservado invisível para alinhar as teclas
+        if (tecla === 'placeholder') {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'tecla';
+          placeholder.style.visibility = 'hidden';
+          divLinha.appendChild(placeholder);
+          return;
+        }
         const btn = document.createElement('button');
         btn.className = 'tecla';
         btn.textContent = tecla;
         btn.type = 'button'; // Evita submissão do formulário
 
-        if (tecla === 'espaço') btn.id = 'tecla-espaco';
-        if (tecla === 'Próximo') btn.id = 'tecla-proximo';
-        if (['espaço', 'Próximo'].includes(tecla)) btn.classList.add('tecla-especial');
+        if (tecla === 'espaço') {
+          btn.id = 'tecla-espaco';
+          btn.classList.add('tecla-especial');
+        }
         if (tecla === '←') btn.classList.add('tecla-func');
 
         btn.addEventListener('click', () => this._handleKeyPress(tecla));
@@ -106,19 +115,53 @@ class Keyboard {
   _handleKeyPress(tecla) {
     if (!this.activeInput) return;
 
+    const inputId = this.activeInput.id;
+    let currentValue = this.activeInput.value;
+
     if (tecla === '←') {
-      this.activeInput.value = this.activeInput.value.slice(0, -1);
-    } else if (tecla === 'Próximo') {
-      const campos = Array.from(this.form.querySelectorAll('input[type="text"], input[type="tel"]'));
-      const idx = campos.indexOf(this.activeInput);
-      if (idx > -1 && idx < campos.length - 1) {
-        campos[idx + 1].focus();
-      }
+      currentValue = currentValue.slice(0, -1);
     } else {
       const valor = (tecla === 'espaço') ? ' ' : tecla;
-      if (!((this.activeInput.id === 'cpf' || this.activeInput.id === 'telefone') && this.activeInput.value.length >= 11)) {
-        this.activeInput.value += valor;
+      // Adiciona o valor apenas se não for um campo numérico com comprimento máximo de dígitos atingido
+      const currentDigits = currentValue.replace(/\D/g, '').length;
+      if (!((inputId === 'cpf' || inputId === 'telefone') && currentDigits >= 11)) {
+        currentValue += valor;
       }
     }
+
+    if (inputId === 'cpf') {
+      this.activeInput.value = this._formatCPF(currentValue);
+    } else if (inputId === 'telefone') {
+      this.activeInput.value = this._formatTelefone(currentValue);
+    } else {
+      this.activeInput.value = currentValue;
+    }
+  }
+
+  /**
+   * Formata um valor como CPF (XXX.XXX.XXX-XX).
+   * @param {string} value O valor a ser formatado.
+   * @returns {string} O valor formatado.
+   */
+  _formatCPF(value) {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+      .substring(0, 14);
+  }
+
+  /**
+   * Formata um valor como telefone ((XX) XXXXX-XXXX).
+   * @param {string} value O valor a ser formatado.
+   * @returns {string} O valor formatado.
+   */
+  _formatTelefone(value) {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d)/, '$1-$2')
+      .substring(0, 15);
   }
 }
