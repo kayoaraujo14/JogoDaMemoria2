@@ -38,23 +38,23 @@
             <label for="cpf">CPF</label>
           </div>
 
-          <div class="form-group">
-            <select id="orgao" name="orgao" required>
-              <option value="" disabled selected>Selecione seu órgão</option>
-              <option value="orgao1">Órgão 1</option>
-              <option value="orgao2">Órgão 2</option>
-              <option value="orgao3">Órgão 3</option>
-            </select>
-          </div>
-
-          <div class="form-group">
+          <div class="form-group radio-container">
+            <p class="radio-label">Você é filiado(a) ao sindicato/associação:</p>
             <div class="radio-group">
-              <label><input type="radio" name="vinculo" value="associado" required> Associado</label>
-              <label><input type="radio" name="vinculo" value="familiar"> Familiar de Associado</label>
-              <label><input type="radio" name="vinculo" value="outro"> Outro</label>
+              <label><input type="radio" name="filiado" value="sim" required> Sim</label>
+              <label><input type="radio" name="filiado" value="nao"> Não</label>
+              <label><input type="radio" name="filiado" value="parente"> Parente de filiado</label>
             </div>
           </div>
-          
+
+          <div class="form-group radio-container">
+            <p class="radio-label">Você é associado(a) ao Sicredi Cooperjuris:</p>
+            <div class="radio-group">
+              <label><input type="radio" name="associado_cooperjuris" value="sim" required> Sim</label>
+              <label><input type="radio" name="associado_cooperjuris" value="nao"> Não</label>
+            </div>
+          </div>
+
           <div class="form-group-checkbox">
             <input type="checkbox" id="lgpd-consent" name="lgpd-consent" required>
             <label for="lgpd-consent">Li e concordo com o uso dos meus dados para esta campanha, conforme a LGPD.</label>

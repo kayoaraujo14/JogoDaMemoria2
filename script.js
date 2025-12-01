@@ -163,11 +163,12 @@ function marcarCPFusado(cpf) {
  * @param {string} telefone The player's phone number.
  * @param {string} cpf The player's CPF.
  * @param {string} orgao The player's organization.
- * @param {string} vinculo The player's relationship with the organization.
+ * @param {string} filiado The player's affiliation status.
+ * @param {string} associadoCooperjuris The player's association status with Cooperjuris.
  */
-function salvarJogador(nome, telefone, cpf, orgao, vinculo) {
+function salvarJogador(nome, telefone, cpf, filiado, associadoCooperjuris) {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
-  jogadores.push({ nome, telefone, cpf, orgao, vinculo });
+  jogadores.push({ nome, telefone, cpf, filiado, associadoCooperjuris });
   localStorage.setItem(STORAGE_KEYS.JOGADORES, JSON.stringify(jogadores));
 }
 
@@ -180,10 +181,10 @@ btnCSV.onclick = function () {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
   if (jogadores.length === 0) return alert('Nenhum dado para exportar.');
 
-  const linhas = ["Nome,Telefone,CPF,Orgao,Vinculo"];
+  const linhas = ["Nome,Telefone,CPF,Filiado Sindicato/Associação,Associado Cooperjuris"];
   jogadores.forEach(j => {
     // Escapa aspas duplas dentro dos valores, se houver
-    linhas.push([j.nome, j.telefone, j.cpf, j.orgao, j.vinculo].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
+    linhas.push([j.nome, j.telefone, j.cpf, j.filiado, j.associadoCooperjuris].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
   });
 
   const blob = new Blob([linhas.join("\n")], { type: 'text/csv;charset=utf-8;' });
@@ -257,12 +258,12 @@ form.onsubmit = function (e) {
   const nome = form.nome.value.trim(); // Remove espaços em branco
   const telefone = form.telefone.value.replace(/\D/g, ''); // Remove formatação
   const cpf = form.cpf.value.replace(/\D/g, ''); // Remove formatação
-  const orgao = form.orgao.value;
-  const vinculo = form.vinculo.value;
+  const filiado = form.filiado.value;
+  const associadoCooperjuris = form.associado_cooperjuris.value;
   const lgpd = form['lgpd-consent'].checked;
 
-  if (!nome || !telefone || !cpf || !orgao || !vinculo) {
-    erroMsg.textContent = 'Preencha todos os campos.';
+  if (!nome || !telefone || !cpf || !filiado || !associadoCooperjuris) {
+    erroMsg.textContent = 'Preencha todos os campos do formulário.';
     return;
   }
   if (!lgpd) {
@@ -283,7 +284,7 @@ form.onsubmit = function (e) {
   }
 
   state.jogadorCPF = cpf;
-  salvarJogador(nome, telefone, cpf, orgao, vinculo);
+  salvarJogador(nome, telefone, cpf, filiado, associadoCooperjuris);
   iniciarJogo();
 };
 

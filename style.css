@@ -26,7 +26,12 @@
 
 body {
   margin: 0;
-  background: var(--cinza-claro);
+  background-color: var(--cinza-claro); /* Cor de fallback caso a imagem não carregue */
+  background-image: url('imagens/fundo.png');
+  background-size: cover; /* Faz a imagem cobrir toda a tela sem distorcer */
+  background-position: center; /* Centraliza a imagem */
+  background-repeat: no-repeat; /* Evita que a imagem se repita */
+  background-attachment: fixed; /* Mantém o fundo estático durante a rolagem */
   font-family: "Segoe UI", Roboto, sans-serif;
   color: var(--cinza-texto);
   overflow: hidden;
@@ -316,9 +321,20 @@ input:focus {
   background: transparent;
 }
 
+.radio-container {
+  margin-bottom: 20px;
+}
+
+.radio-label {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  color: var(--cinza-texto);
+  font-weight: 500;
+}
+
 .radio-group {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha */
   gap: 10px;
 }
 
@@ -437,13 +453,10 @@ input:focus {
   overflow: hidden;
 }
 .card-front {
-  /* Design aprimorado com padrão e logo */
-  background-color: #e8f5e9;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ctext x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='40' fill='%231B5E20' font-family='Arial'%3ESicredi%3C/text%3E%3C/svg%3E");
-  background-repeat: repeat, no-repeat;
-  background-position: center, center;
-  background-size: auto, 60%;
+  /* Imagem de verso da carta */
+  background-image: url('imagens/costa.png');
+  background-size: cover; /* Garante que a imagem cubra toda a carta */
+  background-position: center; /* Centraliza a imagem */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -456,11 +469,9 @@ input:focus {
 }
 
 .card img {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
-  margin: auto;
-  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Garante que a imagem cubra o espaço sem distorcer */
   transition: transform 0.25s ease-out;
 }
 
