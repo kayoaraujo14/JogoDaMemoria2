@@ -1,6 +1,6 @@
-# Jogo da Memória Sicredi
+# Jogo da Memória
 
-Este é um jogo da memória temático da Sicredi, desenvolvido para eventos e ações de marketing. O jogo é construído com HTML, CSS e JavaScript puro, sem a necessidade de frameworks.
+Este é um jogo da memória desenvolvido para eventos e ações de marketing. O jogo é construído com HTML, CSS e JavaScript puro, sem a necessidade de frameworks.
 
 ## Funcionalidades
 

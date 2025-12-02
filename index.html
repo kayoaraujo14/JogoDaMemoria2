@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jogo da Memória - Sicredi</title>
+  <title>Jogo da Memória</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,9 +12,7 @@
     <!-- ========== TELA DE CADASTRO ========== -->
     <section id="cadastro-section" class="screen active">
       <header class="screen-header">
-        <div class="header-inner">
-          <h1 class="title-centered">Jogo da Memória - Sicredi</h1>
-        </div>
+        <div class="header-inner"></div>
         <button id="btn-settings" class="settings-btn" title="Configurações" aria-label="Abrir Configurações">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
             <title>Configurações</title>
@@ -26,15 +24,15 @@
       <div class="cadastro-card">
         <form id="cadastro-form" autocomplete="off" novalidate>
           <div class="form-group">
-            <input id="nome" name="novo-nome" type="text" inputmode="text" autocomplete="new-nome" autocorrect="off" autocapitalize="none" spellcheck="false" required placeholder=" " />
+            <input id="nome" name="nome-do-jogador" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" required placeholder=" " readonly />
             <label for="nome">Nome</label>
           </div>
           <div class="form-group">
-            <input id="telefone" name="novo-telefone" type="tel" inputmode="numeric" autocomplete="new-telefone" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="15" required placeholder=" " />
+            <input id="telefone" name="telefone-do-jogador" type="tel" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="15" required placeholder=" " readonly />
             <label for="telefone">Telefone</label>
           </div>
           <div class="form-group">
-            <input id="cpf" name="novo-cpf" type="text" inputmode="numeric" autocomplete="new-cpf" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="14" required placeholder=" " />
+            <input id="cpf" name="cpf-do-jogador" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="14" required placeholder=" " readonly />
             <label for="cpf">CPF</label>
           </div>
 
@@ -57,7 +55,7 @@
 
           <div class="form-group-checkbox">
             <input type="checkbox" id="lgpd-consent" name="lgpd-consent" required>
-            <label for="lgpd-consent">Li e concordo com o uso dos meus dados para esta campanha, conforme a LGPD.</label>
+            <label for="lgpd-consent">Concordo com o uso dos meus dados para esta campanha, conforme a LGPD.</label>
           </div>
           
           <div id="cadastro-erro" class="erro-msg" aria-live="assertive"></div>
@@ -109,7 +107,7 @@
           <h3>🏆 Top 5 Tempos 🏆</h3>
           <ol id="ranking-list"></ol>
         </div>
-        <button id="voltar-cadastro-premio" class="btn-primary">Jogar novamente</button>
+        <button id="voltar-cadastro-premio" class="btn-primary">voltar para tela inicial</button>
       </div>
     </section>
 
@@ -120,9 +118,9 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="64" height="64"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,15H13V17H11V15M11,7H13V13H11V7Z" /></svg>
         </div>
         <h2>Tempo esgotado!</h2>
-        <p>Não foi desta vez, mas você chegou perto! Que tal tentar de novo?</p>
+        <p>Não foi desta vez, mas você chegou perto!</p>
         <p class="fail-stats">Você encontrou <strong id="pairs-found">0</strong> pares.</p>
-        <button id="voltar-cadastro-fail" class="btn-primary">Tentar novamente</button>
+        <button id="voltar-cadastro-fail" class="btn-primary">Voltar para tela inicial</button>
       </div>
     </section>
   </main>
@@ -168,5 +166,28 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <script src="keyboard.js"></script>
   <script src="script.js"></script>
+  <script>
+    // Solução robusta para desativar o preenchimento automático em ambientes de totem/quiosque
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('#nome, #telefone, #cpf');
+
+      inputs.forEach(input => {
+        // Usamos 'mousedown' pois ocorre antes do 'focus', enganando o autofill.
+        // Isso torna o campo editável e imediatamente foca nele.
+        input.addEventListener('mousedown', (e) => {
+          if (e.target.hasAttribute('readonly')) {
+            e.target.removeAttribute('readonly');
+            // Força o foco para garantir que o cursor apareça e o teclado virtual funcione.
+            e.target.focus();
+          }
+        }, true); // Usar 'true' para capturar o evento na fase de captura.
+
+        // Ao sair do campo, torna-o 'readonly' novamente para o próximo usuário.
+        input.addEventListener('blur', () => {
+          input.setAttribute('readonly', 'readonly');
+        });
+      });
+    });
+  </script>
 </body>
 </html>

@@ -163,12 +163,11 @@ function marcarCPFusado(cpf) {
  * @param {string} telefone The player's phone number.
  * @param {string} cpf The player's CPF.
  * @param {string} orgao The player's organization.
- * @param {string} filiado The player's affiliation status.
- * @param {string} associadoCooperjuris The player's association status with Cooperjuris.
+ * @param {string} vinculo The player's relationship with the organization.
  */
-function salvarJogador(nome, telefone, cpf, filiado, associadoCooperjuris) {
+function salvarJogador(nome, telefone, cpf, orgao, vinculo) {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
-  jogadores.push({ nome, telefone, cpf, filiado, associadoCooperjuris });
+  jogadores.push({ nome, telefone, cpf, orgao, vinculo });
   localStorage.setItem(STORAGE_KEYS.JOGADORES, JSON.stringify(jogadores));
 }
 
@@ -181,10 +180,10 @@ btnCSV.onclick = function () {
   const jogadores = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOGADORES) || '[]');
   if (jogadores.length === 0) return alert('Nenhum dado para exportar.');
 
-  const linhas = ["Nome,Telefone,CPF,Filiado Sindicato/Associação,Associado Cooperjuris"];
+  const linhas = ["Nome,Telefone,CPF,Orgao,Vinculo"];
   jogadores.forEach(j => {
     // Escapa aspas duplas dentro dos valores, se houver
-    linhas.push([j.nome, j.telefone, j.cpf, j.filiado, j.associadoCooperjuris].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
+    linhas.push([j.nome, j.telefone, j.cpf, j.orgao, j.vinculo].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
   });
 
   const blob = new Blob([linhas.join("\n")], { type: 'text/csv;charset=utf-8;' });
@@ -255,15 +254,20 @@ form.onsubmit = function (e) {
   e.preventDefault();
   erroMsg.textContent = '';
 
+  // Garante que todos os campos não sejam readonly antes da validação
+  form.querySelectorAll('input[readonly]').forEach(input => {
+    input.removeAttribute('readonly');
+  });
+
   const nome = form.nome.value.trim(); // Remove espaços em branco
   const telefone = form.telefone.value.replace(/\D/g, ''); // Remove formatação
   const cpf = form.cpf.value.replace(/\D/g, ''); // Remove formatação
   const filiado = form.filiado.value;
-  const associadoCooperjuris = form.associado_cooperjuris.value;
+  const associado = form.associado_cooperjuris.value;
   const lgpd = form['lgpd-consent'].checked;
 
-  if (!nome || !telefone || !cpf || !filiado || !associadoCooperjuris) {
-    erroMsg.textContent = 'Preencha todos os campos do formulário.';
+  if (!nome || !telefone || !cpf || !filiado || !associado) {
+    erroMsg.textContent = 'Preencha todos os campos.';
     return;
   }
   if (!lgpd) {
@@ -284,7 +288,7 @@ form.onsubmit = function (e) {
   }
 
   state.jogadorCPF = cpf;
-  salvarJogador(nome, telefone, cpf, filiado, associadoCooperjuris);
+  salvarJogador(nome, telefone, cpf, filiado, associado);
   iniciarJogo();
 };
 
@@ -476,11 +480,6 @@ function resetarJogo() {
 
 // ===== BLOQUEIOS DE PÁGINA =====
 document.addEventListener('contextmenu', e => e.preventDefault());
-document.querySelectorAll('#cadastro-form input').forEach(input => {
-  input.setAttribute('autocomplete', 'new-' + input.id);
-  input.setAttribute('readonly', true);
-  setTimeout(() => input.removeAttribute('readonly'), 500); // Previne autofill em alguns navegadores
-});
 
 // ===== INICIALIZAÇÃO =====
 showScreen(screens.cadastro);
